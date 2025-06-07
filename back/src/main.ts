@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app/app.module";
@@ -27,6 +27,7 @@ async function bootstrap() {
     credentials: true
   });
   app.setGlobalPrefix("/api");
+  app.useGlobalPipes(new ValidationPipe());
 
   await app.listen(port, host);
   Logger.log(`🚀 Application is running on: ${url}`);

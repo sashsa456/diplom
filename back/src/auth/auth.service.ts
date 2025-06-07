@@ -26,7 +26,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.userService
       .findOne({
-        username: dto.username
+        email: dto.email
       })
       .catch(() => {
         throw new BadRequestException("Invalid credentials");

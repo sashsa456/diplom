@@ -9,13 +9,12 @@ import { ClassSerializerInterceptor, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { JwtModule, JwtModuleOptions } from "@nestjs/jwt";
+import { ServeStaticModule } from "@nestjs/serve-static";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
+import { join } from "path";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { join } from "path";
-import { ServeStaticModule } from "@nestjs/serve-static";
 
-console.log(process.env.NODE_ENV);
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,6 +42,10 @@ console.log(process.env.NODE_ENV);
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "..", "static"),
       serveRoot: "/static"
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", "..", "uploads"),
+      serveRoot: "/uploads"
     }),
     UserModule,
     AuthModule

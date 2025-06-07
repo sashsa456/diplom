@@ -10,6 +10,11 @@ export class UserEntity extends TimestampEntity {
   @Column()
   username: string;
 
+  @Column({
+    unique: true
+  })
+  email: string;
+
   @Column()
   @Exclude()
   password: string;
@@ -25,6 +30,11 @@ export class UserEntity extends TimestampEntity {
     default: false
   })
   isAdmin: boolean;
+
+  @Column({
+    nullable: true
+  })
+  avatar?: string | null;
 
   /* Relations */
 }

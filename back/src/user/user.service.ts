@@ -13,13 +13,14 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    await this.usernameIsTaken(createUserDto.username);
+    await this.emailIsTaken(createUserDto.email);
 
     const hash = await this.hashPassword(createUserDto.password);
 
     const shouldBeAdmin = await this.checkIsFirstUser();
     const user = this.repo.create({
       username: createUserDto.username,
+      email: createUserDto.email,
       password: hash,
       isAdmin: shouldBeAdmin
     });
@@ -53,8 +54,8 @@ export class UserService {
   async update(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.findOne({ id });
 
-    if (updateUserDto.username) {
-      await this.usernameIsTaken(updateUserDto.username);
+    if (updateUserDto.email) {
+      await this.emailIsTaken(updateUserDto.username);
     }
 
     if (updateUserDto.password) {
@@ -65,13 +66,13 @@ export class UserService {
     return this.repo.update(user.id, updateUserDto);
   }
 
-  async usernameIsTaken(username: string) {
-    const usernameIsTaken = await this.repo.findOneBy({
-      username
+  async emailIsTaken(email: string) {
+    const isTaken = await this.repo.findOneBy({
+      email
     });
 
-    if (usernameIsTaken) {
-      throw new BadRequestException("Username is taken");
+    if (isTaken) {
+      throw new BadRequestException("Email is taken");
     }
 
     return false;
@@ -82,6 +83,8 @@ export class UserService {
 
     return this.repo.delete(id);
   }
+
+  async uploadAvatar(userId: number, avatar: Express.Multer.File) {}
 
   async checkIsFirstUser() {
     return (await this.repo.count()) === 0;
