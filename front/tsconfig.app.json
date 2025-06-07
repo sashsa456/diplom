@@ -10,7 +10,7 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
@@ -19,9 +19,18 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Aliases */
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"],
+      "@shared/*": ["./shared/*"],
+      "@pages/*": ["./pages/*"],
+      "@widgets/*": ["./widgets/*"],
+      "@features/*": ["./features/*"]
+    }
   },
   "include": ["src"]
 }
