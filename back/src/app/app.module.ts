@@ -12,6 +12,8 @@ import { JwtModule, JwtModuleOptions } from "@nestjs/jwt";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { join } from "path";
+import { ServeStaticModule } from "@nestjs/serve-static";
 
 console.log(process.env.NODE_ENV);
 @Module({
@@ -37,6 +39,10 @@ console.log(process.env.NODE_ENV);
       useFactory: (configService: ConfigService) =>
         configService.get("jwt") as JwtModuleOptions,
       inject: [ConfigService]
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", "..", "static"),
+      serveRoot: "/static"
     }),
     UserModule,
     AuthModule
