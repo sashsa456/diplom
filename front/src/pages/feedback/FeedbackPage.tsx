@@ -1,8 +1,6 @@
 import { Card, Form, Input, Button, Typography, Row, Col, message } from 'antd';
 import { MailOutlined, UserOutlined, ReadOutlined } from '@ant-design/icons';
-import { AppInfo, useAppInfo, useSendFeedback } from '@/shared/api/hooks';
-import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/shared/api/client';
+import { useAppInfo, useSendFeedback } from '@/shared/api/hooks';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;

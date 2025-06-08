@@ -60,6 +60,11 @@ export class CreateProductDto {
   @ApiProperty()
   countryMade: CountryMade;
 
+  @ApiProperty({
+    format: "binary"
+  })
+  image: string;
+
   imageName: string;
   userId: number;
 }

@@ -1,3 +1,4 @@
+import { Public } from "@/auth/is-public.decorator";
 import { mimeTypeFilter } from "@/common";
 import { imagePattern } from "@/common/utils/mimeTypeFilter";
 import { CreateReviewDto } from "@/review/dto/create-review.dto";
@@ -20,10 +21,11 @@ import {
   UseInterceptors
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { diskStorage } from "multer";
 import { extname, join } from "path";
 import { CreateProductDto } from "./dto/create-product.dto";
+import { SearchProductDto } from "./dto/search-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 import { ProductGuard } from "./product.guard";
@@ -43,6 +45,12 @@ export class ProductController {
     private readonly productService: ProductService,
     private readonly reviewService: ReviewService
   ) {}
+
+  @Public()
+  @Get("/search")
+  search(@Query() searchProductDto: SearchProductDto) {
+    return this.productService.search(searchProductDto);
+  }
 
   @UseInterceptors(
     FileInterceptor("image", {
@@ -66,6 +74,7 @@ export class ProductController {
     })
   )
   @Post()
+  @ApiConsumes("multipart/form-data")
   create(
     @UploadedFile() image: Express.Multer.File,
     @Body() createProductDto: CreateProductDto,

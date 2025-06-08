@@ -1,7 +1,15 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { FindManyOptions, FindOneOptions, Repository } from "typeorm";
+import {
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsWhere,
+  ILike,
+  In,
+  Repository
+} from "typeorm";
 import { CreateProductDto } from "./dto/create-product.dto";
+import { SearchProductDto } from "./dto/search-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 import { ProductEntity } from "./entities/product.entity";
@@ -12,6 +20,45 @@ export class ProductService {
     @InjectRepository(ProductEntity)
     private readonly repo: Repository<ProductEntity>
   ) {}
+
+  async search(searchProductDto: SearchProductDto) {
+    const { query, colors, ...filters } = searchProductDto;
+
+    const makeQueryLike = (
+      key: keyof ProductEntity,
+      query: string,
+      where: FindOptionsWhere<ProductEntity> = {}
+    ) =>
+      query
+        .trim()
+        .split(" ")
+        .map(q => ({
+          [key]: ILike(`%${q}%`),
+          ...where
+        }));
+
+    const defaultFilters = {
+      ...filters,
+      ...(colors && { colors: In(colors) })
+    };
+
+    const whereForTitle = makeQueryLike("title", query, defaultFilters);
+    const whereForDescription = makeQueryLike(
+      "description",
+      query,
+      defaultFilters
+    );
+
+    return this.repo.find({
+      where: [
+        ...whereForTitle,
+        ...whereForDescription,
+        {
+          ...defaultFilters
+        }
+      ]
+    });
+  }
 
   async create(createProductDto: CreateProductDto) {
     const { userId, imageName, ...productDto } = createProductDto;
