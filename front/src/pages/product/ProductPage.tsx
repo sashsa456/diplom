@@ -181,7 +181,7 @@ export const ProductPage = () => {
       <Row gutter={[32, 32]}>
         <Col xs={24} md={12}>
           <img
-            src={product.image}
+            src={`http://localhost:3001/api${product.image}`}
             alt={product.title}
             style={{ width: '100%', height: 'auto', borderRadius: 8 }}
           />

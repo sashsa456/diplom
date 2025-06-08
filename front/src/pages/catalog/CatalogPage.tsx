@@ -120,7 +120,7 @@ export const CatalogPage = () => {
                 cover={
                   <img
                     alt={product.title}
-                    src={product.image}
+                    src={`http://localhost:3001/api${product.image}`}
                     style={{ height: 200, objectFit: 'cover' }}
                   />
                 }

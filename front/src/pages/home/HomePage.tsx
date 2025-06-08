@@ -211,7 +211,7 @@ export const HomePage = () => {
                   cover={
                     <img
                       alt={product.title}
-                      src={product.image}
+                      src={`http://localhost:3001/api${product.image}`}
                       className={styles.productImage}
                     />
                   }
