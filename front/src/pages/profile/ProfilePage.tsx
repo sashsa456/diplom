@@ -345,10 +345,18 @@ export const ProfilePage = () => {
               <Form.Item label="Имя пользователя" name="username">
                 <Input />
               </Form.Item>
-              <Form.Item label="Email" name="email">
+              <Form.Item label="Email" name="email" rules={[{
+                type: "email",
+                message: 'Некорректный email'
+              }]}>
                 <Input />
               </Form.Item>
-              <Form.Item label="Новый пароль" name="password">
+              <Form.Item label="Новый пароль" name="password" rules={[
+                {
+                  min: 6,
+                  message: 'Пароль должен содержать не менее 6 символов',
+                }
+              ]}>
                 <Input.Password />
               </Form.Item>
               <Form.Item>
