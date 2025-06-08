@@ -10,10 +10,19 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
       const { data } = await apiClient.post(endpoints.auth.login, credentials);
-      return data;
+      return { data, credentials };
     },
-    onSuccess: (data) => {
-      setUser(data.user);
+    onSuccess: ({ data, credentials }) => {
+      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+
+      setUser({
+        id: payload.sub,
+        email: credentials.email,
+        //FIXME временно используется часть email как username
+        username: credentials.email.split('@')[0],
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
     },
   });
 };
@@ -23,15 +32,24 @@ export const useRegister = () => {
 
   return useMutation({
     mutationFn: async (userData: {
-      name: string;
+      username: string;
       email: string;
       password: string;
     }) => {
       const { data } = await apiClient.post(endpoints.auth.register, userData);
-      return data;
+      return { data, userData };
     },
-    onSuccess: (data) => {
-      setUser(data.user);
+    onSuccess: ({ data, userData }) => {
+      // Получаем данные пользователя из токена
+      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+
+      setUser({
+        id: payload.sub,
+        email: userData.email,
+        username: userData.username,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
     },
   });
 };

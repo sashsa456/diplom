@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '../hooks';
 
 const API_URL = 'http://localhost:3001/api';
 
@@ -10,12 +11,9 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth-storage');
-  if (token) {
-    const { state } = JSON.parse(token);
-    if (state.user?.token) {
-      config.headers.Authorization = `Bearer ${state.user.token}`;
-    }
+  const user = useAuthStore.getState().user;
+  if (user?.accessToken) {
+    config.headers.Authorization = `Bearer ${user.accessToken}`;
   }
   return config;
 });
@@ -25,6 +23,7 @@ export const endpoints = {
     login: '/auth/login',
     register: '/auth/register',
     logout: '/auth/logout',
+    getUserAgreement: '/static/user_agreement.docx',
   },
   products: {
     list: '/products',

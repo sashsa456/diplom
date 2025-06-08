@@ -37,7 +37,7 @@ export const AuthPage = () => {
   const handleRegister = async (values: RegisterFormData) => {
     try {
       await register.mutateAsync({
-        name: values.name,
+        username: values.name,
         email: values.email,
         password: values.password,
       });

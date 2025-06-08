@@ -7,6 +7,7 @@ import {
   UserOutlined,
   MessageOutlined,
 } from '@ant-design/icons';
+import { useAuthStore } from '@/shared/hooks';
 
 const { Header, Content, Footer } = AntLayout;
 
@@ -16,6 +17,7 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const menuItems = [
     {
@@ -35,6 +37,8 @@ export const Layout = ({ children }: LayoutProps) => {
     },
   ];
 
+  console.log(isAuthenticated);
+
   return (
     <AntLayout className="min-vh-100">
       <Header className="d-flex align-items-center justify-content-between px-4">
@@ -51,11 +55,15 @@ export const Layout = ({ children }: LayoutProps) => {
           />
         </div>
         <Space>
-          <Button type="primary" icon={<UserOutlined />}>
-            <Link to="/auth" className="text-white text-decoration-none">
-              Войти
-            </Link>
-          </Button>
+          {isAuthenticated ? (
+            <>123</>
+          ) : (
+            <Button type="primary" icon={<UserOutlined />}>
+              <Link to="/auth" className="text-white text-decoration-none">
+                Войти
+              </Link>
+            </Button>
+          )}
         </Space>
       </Header>
 
