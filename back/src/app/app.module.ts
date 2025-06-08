@@ -7,7 +7,11 @@ import tokenConfig from "@/config/token.config";
 import { FeedbackModule } from "@/feedback/feedback.module";
 import { ProductModule } from "@/product/product.module";
 import { UserModule } from "@/user/user.module";
-import { ClassSerializerInterceptor, Module } from "@nestjs/common";
+import {
+  ClassSerializerInterceptor,
+  Module,
+  OnModuleInit
+} from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { JwtModule, JwtModuleOptions } from "@nestjs/jwt";
@@ -16,6 +20,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { join } from "path";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { AppEntity } from "./entities/app.entity";
 
 @Module({
   imports: [
@@ -49,6 +54,7 @@ import { AppService } from "./app.service";
       rootPath: join(__dirname, "..", "..", "uploads"),
       serveRoot: "/api/uploads"
     }),
+    TypeOrmModule.forFeature([AppEntity]),
     UserModule,
     AuthModule,
     ProductModule,
@@ -67,4 +73,10 @@ import { AppService } from "./app.service";
     }
   ]
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private readonly appService: AppService) {}
+
+  async onModuleInit() {
+    await this.appService.seed();
+  }
+}

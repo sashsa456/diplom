@@ -1,3 +1,4 @@
+import { AppEntity } from "@/app/entities/app.entity";
 import { FeedbackEntity } from "@/feedback/entities/feedback.entity";
 import { ProductEntity } from "@/product/entities/product.entity";
 import { ReviewEntity } from "@/review/entities/review.entity";
@@ -16,7 +17,13 @@ const dbConfig = registerAs(
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [UserEntity, ProductEntity, ReviewEntity, FeedbackEntity],
+    entities: [
+      UserEntity,
+      ProductEntity,
+      ReviewEntity,
+      FeedbackEntity,
+      AppEntity
+    ],
     migrations: ["src/migrations/*.ts"],
     synchronize: true,
     logging: "all",
