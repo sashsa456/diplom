@@ -14,6 +14,8 @@ import { ProfilePage } from '@/pages/profile';
 import { AdminPage } from '@/pages/admin';
 import { CreateProductPage } from '@/pages/create-product';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
+import { AppInfo, useAppInfo } from '@/shared/api/hooks';
+import { queryKeys, apiClient, endpoints } from '@/shared/api/client';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,7 +29,19 @@ const queryClient = new QueryClient({
   },
 });
 
+queryClient.fetchQuery({
+  queryKey: [queryKeys.app.all],
+    queryFn: async () => {
+      const { data } = await apiClient.get<AppInfo>(endpoints.app.all);
+      return data;
+    },
+}).then(({name}) => {
+  document.title = name;
+});
+
 function App() {
+  
+
   return (
     <QueryClientProvider client={queryClient}>
       <ConfigProvider

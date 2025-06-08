@@ -1,6 +1,8 @@
 import { Card, Form, Input, Button, Typography, Row, Col, message } from 'antd';
 import { MailOutlined, UserOutlined, ReadOutlined } from '@ant-design/icons';
-import { useSendFeedback } from '@/shared/api/hooks';
+import { AppInfo, useAppInfo, useSendFeedback } from '@/shared/api/hooks';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/api/client';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -15,6 +17,9 @@ interface FeedbackFormData {
 export const FeedbackPage = () => {
   const [form] = Form.useForm();
   const sendFeedback = useSendFeedback();
+
+
+  const { data: appInfo } = useAppInfo();
 
   const onFinish = async (values: FeedbackFormData) => {
     try {
@@ -133,11 +138,11 @@ export const FeedbackPage = () => {
         <Row gutter={[24, 24]}>
           <Col xs={24} sm={12}>
             <Text strong>Email:</Text>
-            <Paragraph>support@example.com</Paragraph>
+            <Paragraph>{appInfo?.contactEmail}</Paragraph>
           </Col>
           <Col xs={24} sm={12}>
             <Text strong>Телефон:</Text>
-            <Paragraph>+7 (999) 123-45-67</Paragraph>
+            <Paragraph>{appInfo?.contactPhone}</Paragraph>
           </Col>
           <Col xs={24}>
             <Text strong>Адрес:</Text>

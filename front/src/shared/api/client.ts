@@ -72,7 +72,6 @@ export const endpoints = {
     uploadAvatar: '/users/me/avatar',
     all: '/users',
   },
-
   products: {
     list: '/products',
     details: (id: number) => `/products/${id}`,
@@ -84,12 +83,14 @@ export const endpoints = {
     list: (productId: number) => `/products/${productId}/reviews`,
     create: (productId: number) => `/products/${productId}/reviews`,
   },
-
   feedbacks: {
     create: '/feedbacks',
     all: '/feedbacks',
     delete: '/feedbacks',
   },
+  app: {
+    all: '/app',
+  }
 };
 
 export const queryKeys = {
@@ -112,4 +113,7 @@ export const queryKeys = {
   feedbacks: {
     all: 'feedbacks',
   },
+  app: {
+    all: "app",
+  }
 };

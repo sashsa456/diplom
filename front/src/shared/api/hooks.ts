@@ -113,6 +113,30 @@ export interface Feedback {
   createdAt: string;
 }
 
+export interface AppInfo {
+  name: string;
+  contactEmail: string;
+  contactPhone: string;
+}
+
+export const useAppInfo = () => {
+  return useQuery({
+    queryKey: [queryKeys.app.all],
+    queryFn: async () => {
+      const { data } = await apiClient.get<AppInfo>(endpoints.app.all);
+      return data;
+    },
+  });
+};
+
+export const useAppInfoUpdate = () => {
+  return useMutation({
+    mutationFn: async (appInfo: AppInfo) => {
+      const { data } = await apiClient.patch(endpoints.app.all, appInfo);
+      return data;
+    },
+  });
+}
 
 export const useMyProducts = (status?: 'pending' | 'accepted' | 'rejected') => {
   return useQuery<Product[]>({

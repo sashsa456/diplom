@@ -24,26 +24,29 @@ import {
   useFeedbacks,
   useDeleteFeedback,
   Feedback,
+  useAppInfo,
+  useAppInfoUpdate,
+  AppInfo,
 } from '@/shared/api/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/client';
 
 const { Title, Text } = Typography;
 
-
-
 export const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('1');
-  const [siteName, setSiteName] = useState('KidsFashion');
-  const [contactEmail, setContactEmail] = useState('info@kidsfashion.ru');
   const queryClient = useQueryClient();
+
+  const [form] = Form.useForm<AppInfo>();
 
   const { data: products, isLoading: isProductsLoading } = useProducts();
   const { data: users, isLoading: isUsersLoading } = useUsers();
   const { data: feedbacks, isLoading: isFeedbacksLoading } = useFeedbacks();
+  const { data: appInfo, isLoading: isAppInfoLoading } = useAppInfo();
   const updateProductStatusMutation = useUpdateProductStatus();
   const updateUserAdminStatusMutation = useUpdateUserAdminStatus();
   const deleteFeedbackMutation = useDeleteFeedback();
+  const updateAppInfoMutation = useAppInfoUpdate();
 
   const pendingProducts =
     products?.filter((product: Product) => product.status === 'pending') || [];
@@ -57,6 +60,16 @@ export const AdminPage = () => {
     } catch (error) {
       message.error('Ошибка при удалении отзыва');
       console.error('Delete feedback error:', error);
+    }
+  };
+
+  const handleAppInfoUpdate = async (values: AppInfo) => {
+    try {
+      await updateAppInfoMutation.mutateAsync(values);
+      message.success('Информация обновлена');
+    } catch (error) {
+      message.error('Ошибка при обновлении информации');
+      console.error('Update app info error:', error);
     }
   };
 
@@ -92,10 +105,6 @@ export const AdminPage = () => {
       message.error('Ошибка при обновлении статуса администратора');
       console.error('Update admin status error:', error);
     }
-  };
-
-  const handleSaveSettings = () => {
-    console.log('Настройки сохранены:', { siteName, contactEmail });
   };
 
   const usersColumns = [
@@ -211,107 +220,128 @@ export const AdminPage = () => {
   ];
 
   const items = [
-    {
-      key: '1',
-      label: 'Пользователи',
-      children: (
-        <Card>
-          <Title level={4}>Управление пользователями</Title>
-          {isUsersLoading ? (
-            <div className="text-center py-5">
-              <Spin size="large" />
-              <Text className="d-block mt-3">Загрузка пользователей...</Text>
-            </div>
-          ) : (
-            <Table
-              columns={usersColumns}
-              dataSource={users}
-              rowKey="id"
-              pagination={false}
-              scroll={{ x: 'max-content' }}
-            />
-          )}
-        </Card>
-      ),
-    },
-    {
-      key: '2',
-      label: 'Товары',
-      children: (
-        <Card>
-          <Title level={4}>Модерация товаров</Title>
-          {isProductsLoading ? (
-            <div className="text-center py-5">
-              <Spin size="large" />
-              <Text className="d-block mt-3">Загрузка товаров...</Text>
-            </div>
-          ) : pendingProducts.length === 0 ? (
-            <div className="text-center py-5">
-              <CheckCircleOutlined
-                style={{ fontSize: '48px', color: '#52c41a' }}
-              />
-              <Title level={5} className="mt-3">
-                Нет товаров на модерации
-              </Title>
-              <Text type="secondary">В данный момент все товары проверены</Text>
-            </div>
-          ) : (
-            <Table
-              columns={productColumns}
-              dataSource={pendingProducts}
-              rowKey="id"
-              pagination={false}
-              scroll={{ x: 'max-content' }}
-            />
-          )}
-        </Card>
-      ),
-    },
-    {
-      key: '3',
-      label: 'Настройки',
-      children: (
-        <Card>
-          <Title level={4}>Настройки сайта</Title>
-          <Form layout="vertical">
-            <Form.Item label="Название сайта">
-              <Input
-                value={siteName}
-                onChange={(e) => setSiteName(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item label="Контактный email">
-              <Input
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" onClick={handleSaveSettings}>
-                Сохранить настройки
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-      ),
-    },
-    {
-      key: '4',
-      label: 'Обратная связь',
-      children: (
-        <Card>
-          <Title level={4}>Управление обратной связью пользователей</Title>
-          <Table
-            columns={feedbackColumns}
-            dataSource={feedbacks}
-            loading={isFeedbacksLoading}
-            rowKey="id"
-            pagination={false}
-            scroll={{ x: 'max-content' }}
-          />
-        </Card>
-      ),
-    },
+      {
+          key: "1",
+          label: "Пользователи",
+          children: (
+              <Card>
+                  <Title level={4}>Управление пользователями</Title>
+                  {isUsersLoading ? (
+                      <div className="text-center py-5">
+                          <Spin size="large" />
+                          <Text className="d-block mt-3">
+                              Загрузка пользователей...
+                          </Text>
+                      </div>
+                  ) : (
+                      <Table
+                          columns={usersColumns}
+                          dataSource={users}
+                          rowKey="id"
+                          pagination={false}
+                          scroll={{ x: "max-content" }}
+                      />
+                  )}
+              </Card>
+          )
+      },
+      {
+          key: "2",
+          label: "Товары",
+          children: (
+              <Card>
+                  <Title level={4}>Модерация товаров</Title>
+                  {isProductsLoading ? (
+                      <div className="text-center py-5">
+                          <Spin size="large" />
+                          <Text className="d-block mt-3">
+                              Загрузка товаров...
+                          </Text>
+                      </div>
+                  ) : pendingProducts.length === 0 ? (
+                      <div className="text-center py-5">
+                          <CheckCircleOutlined
+                              style={{ fontSize: "48px", color: "#52c41a" }}
+                          />
+                          <Title level={5} className="mt-3">
+                              Нет товаров на модерации
+                          </Title>
+                          <Text type="secondary">
+                              В данный момент все товары проверены
+                          </Text>
+                      </div>
+                  ) : (
+                      <Table
+                          columns={productColumns}
+                          dataSource={pendingProducts}
+                          rowKey="id"
+                          pagination={false}
+                          scroll={{ x: "max-content" }}
+                      />
+                  )}
+              </Card>
+          )
+      },
+      {
+          key: "3",
+          label: "Настройки",
+          children: (
+              <Card>
+                  <Title level={4}>Настройки сайта</Title>
+                  <Form layout="vertical" form={form} onFinish={handleAppInfoUpdate}>
+                      <Form.Item
+                          name="name"
+                          label="Название сайта"
+                          initialValue={appInfo?.name}
+                      >
+                          <Input />
+                      </Form.Item>
+                      <Form.Item
+                          name={"contactEmail"}
+                          label="Электронная почта"
+                          initialValue={appInfo?.contactEmail}
+                      >
+                          <Input />
+                      </Form.Item>
+                      <Form.Item
+                          name={"contactPhone"}
+                          label="Телефон"
+                          initialValue={appInfo?.contactPhone}
+                      >
+                          <Input />
+                      </Form.Item>
+                      <Form.Item>
+                          <Button
+                            type="primary"
+                            htmlType="submit"
+                            loading={updateAppInfoMutation.isPending}
+                          >
+                              Сохранить настройки
+                          </Button>
+                      </Form.Item>
+                  </Form>
+              </Card>
+          )
+      },
+      {
+          key: "4",
+          label: "Обратная связь",
+          children: (
+              <Card>
+                  <Title level={4}>
+                      Управление обратной связью пользователей
+                  </Title>
+                  <Table
+                      columns={feedbackColumns}
+                      dataSource={feedbacks}
+                      loading={isFeedbacksLoading}
+                      rowKey="id"
+                      pagination={false}
+                      scroll={{ x: "max-content" }}
+                  />
+              </Card>
+          )
+      }
   ];
 
   return (
