@@ -26,6 +26,19 @@ interface User {
   dateRegistered: string;
 }
 
+
+// Интерфейс для feedback
+interface Feedback {
+  id: number;
+  name: string;
+  email: string;
+  theme:string;
+  status: string;
+  dateRegistered: string;
+  message:string;
+}
+
+
 // Моковые данные для пользователей
 const mockUsers: User[] = [
   {
@@ -43,6 +56,31 @@ const mockUsers: User[] = [
     dateRegistered: '30.05.2025',
   },
 ];
+
+
+// Моковые данные для feedback
+const mockFeedbacks: Feedback[] = [
+  {
+    id: 1,
+    name: 'Анна',
+    email: 'anna@example.com',
+    theme: 'Ошибка на сайте',
+    status: 'Новый',
+    dateRegistered: '01.06.2025',
+    message: 'При оформлении заказа возникла ошибка',
+  },
+  {
+    id: 2,
+    name: 'Иван',
+    email: 'ivan@example.com',
+    theme: 'Предложение по улучшению',
+    status: 'Обработан',
+    dateRegistered: '02.06.2025',
+    message: 'Добавьте возможность фильтрации по размеру',
+  },
+];
+
+
 
 export const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('1');
@@ -77,6 +115,35 @@ export const AdminPage = () => {
       ),
     },
   ];
+
+
+  // Колонки для таблицы feedback
+const feedbackColumns = [
+  { title: 'ID', dataIndex: 'id', key: 'id' },
+  { title: 'Имя', dataIndex: 'name', key: 'name' },
+  { title: 'Email', dataIndex: 'email', key: 'email' },
+  { title: 'Тема', dataIndex: 'theme', key: 'theme' },
+  { title: 'Сообщение', dataIndex: 'message', key: 'message' },
+  { title: 'Статус', dataIndex: 'status', key: 'status' },
+  {
+    title: 'Дата',
+    dataIndex: 'dateRegistered',
+    key: 'dateRegistered',
+  },
+  {
+    title: 'Действия',
+    align:'center',
+    key: 'actions',
+    render: (_: any, record: Feedback) => (
+      <Space size="middle">
+        <Button type="link">Отметить как обработанный</Button>
+        <Button type="link" danger>
+          Удалить
+        </Button>
+      </Space>
+    ),
+  },
+];
 
   const productsForModeration = []; // Моковые данные для товаров на модерации
 
@@ -146,6 +213,22 @@ export const AdminPage = () => {
         </Card>
       ),
     },
+     {
+      key: '4',
+      label: 'Feedback',
+      children: (
+        <Card>
+          <Title level={4}>Управление feedback</Title>
+          <Table
+            columns={feedbackColumns}
+            dataSource={mockFeedbacks}
+            rowKey="id"
+            pagination={false}
+          />
+        </Card>
+      ),
+    },
+    
   ];
 
   return (
@@ -157,7 +240,7 @@ export const AdminPage = () => {
           </Title>
         </Col>
         <Col>
-          <Text type="secondary">Пользователей: 2 Товаров на модерации: 0</Text>
+          <Text type="secondary">Пользователей: 2 Товаров на модерации: 0 feedback:3</Text>
         </Col>
       </Row>
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
