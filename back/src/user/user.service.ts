@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcryptjs";
-import { FindOptionsRelations, FindOptionsWhere, Repository } from "typeorm";
+import { FindManyOptions, FindOneOptions, Repository } from "typeorm";
 import { CreateUserDto } from "./dtos/create-user.dto";
 import { UpdateUserDto } from "./dtos/update-user.dto";
 import { UserEntity } from "./entities/user.entity";
@@ -28,31 +28,22 @@ export class UserService {
     return this.repo.save(user);
   }
 
-  findAll(where: FindOptionsWhere<UserEntity> = {}) {
-    return this.repo.find({
-      where
-    });
+  findAll(options: FindManyOptions<UserEntity> = {}) {
+    return this.repo.find(options);
   }
 
-  async findOne(
-    where: FindOptionsWhere<UserEntity> = {},
-    relations: FindOptionsRelations<UserEntity> = {}
-  ) {
-    const user = await this.repo.findOne({
-      where,
-      relations,
-      loadRelationIds: true
-    });
+  async findOne(options: FindOneOptions<UserEntity> = {}) {
+    const user = await this.repo.findOne(options);
 
     if (!user) {
-      throw new BadRequestException("User not found");
+      throw new BadRequestException("Пользователь не найден");
     }
 
     return user;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.findOne({ id });
+    const user = await this.findOne({ where: { id } });
 
     if (updateUserDto.email) {
       await this.emailIsTaken(updateUserDto.username);
@@ -72,19 +63,17 @@ export class UserService {
     });
 
     if (isTaken) {
-      throw new BadRequestException("Email is taken");
+      throw new BadRequestException("Почта уже занята");
     }
 
     return false;
   }
 
   async remove(id: number) {
-    await this.findOne({ id });
+    await this.findOne({ where: { id } });
 
     return this.repo.delete(id);
   }
-
-  async uploadAvatar(userId: number, avatar: Express.Multer.File) {}
 
   async checkIsFirstUser() {
     return (await this.repo.count()) === 0;

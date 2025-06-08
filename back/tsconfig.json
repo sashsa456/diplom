@@ -18,7 +18,7 @@
     "noFallthroughCasesInSwitch": false,
     "strictPropertyInitialization": false,
     "noImplicitOverride": false,
-    
+
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]

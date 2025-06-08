@@ -105,12 +105,25 @@ export class UserController {
     @UploadedFile()
     avatar: Express.Multer.File
   ) {
-    // const avatarUrl = this.userService.uploadAvatar(userId, avatar);
-
     const avatarUrl = `/uploads/${avatar.filename}`;
 
     return this.userService.update(userId, {
       avatar: avatarUrl
+    });
+  }
+
+  @Get("me/products")
+  getProducts(@UserMe("id") userId: number) {
+    return this.userService.findOne({
+      where: {
+        id: userId
+      },
+      select: {
+        products: true
+      },
+      relations: {
+        products: true
+      }
     });
   }
 }

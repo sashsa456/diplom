@@ -1,3 +1,4 @@
+import { ProductEntity } from "@/product/entities/product.entity";
 import { UserEntity } from "@/user/entities/user.entity";
 import { registerAs } from "@nestjs/config";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
@@ -13,10 +14,11 @@ const dbConfig = registerAs(
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [UserEntity],
+    entities: [UserEntity, ProductEntity],
     migrations: ["src/migrations/*.ts"],
     synchronize: true,
-    logging: "all"
+    logging: "all",
+    cache: true
   })
 );
 

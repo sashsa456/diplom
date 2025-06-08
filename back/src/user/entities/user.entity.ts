@@ -1,6 +1,7 @@
 import { TimestampEntity } from "@/common";
+import { ProductEntity } from "@/product/entities/product.entity";
 import { Exclude } from "class-transformer";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("users")
 export class UserEntity extends TimestampEntity {
@@ -32,9 +33,17 @@ export class UserEntity extends TimestampEntity {
   isAdmin: boolean;
 
   @Column({
+    default: true,
+    select: false
+  })
+  isActive: boolean;
+
+  @Column({
     nullable: true
   })
   avatar?: string | null;
 
   /* Relations */
+  @OneToMany(() => ProductEntity, product => product.user)
+  products: ProductEntity[];
 }

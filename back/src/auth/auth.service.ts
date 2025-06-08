@@ -26,7 +26,9 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.userService
       .findOne({
-        email: dto.email
+        where: {
+          email: dto.email
+        }
       })
       .catch(() => {
         throw new BadRequestException("Invalid credentials");
@@ -49,7 +51,7 @@ export class AuthService {
 
   async logout(userId: number) {
     const user = await this.userService.findOne({
-      id: userId
+      where: { id: userId }
     });
 
     await this.userService.update(user.id, {
@@ -63,7 +65,7 @@ export class AuthService {
 
   async refresh(userId: number, refreshToken: string) {
     const user = await this.userService.findOne({
-      id: userId
+      where: { id: userId }
     });
 
     if (

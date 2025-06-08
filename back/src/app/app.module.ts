@@ -4,6 +4,7 @@ import dbConfig from "@/config/db.config";
 import { validateEnv } from "@/config/env.config";
 import jwtConfig from "@/config/jwt.config";
 import tokenConfig from "@/config/token.config";
+import { ProductModule } from "@/product/product.module";
 import { UserModule } from "@/user/user.module";
 import { ClassSerializerInterceptor, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
@@ -41,14 +42,15 @@ import { AppService } from "./app.service";
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "..", "static"),
-      serveRoot: "/static"
+      serveRoot: "/api/static"
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "..", "uploads"),
-      serveRoot: "/uploads"
+      serveRoot: "/api/uploads"
     }),
     UserModule,
-    AuthModule
+    AuthModule,
+    ProductModule
   ],
   controllers: [AppController],
   providers: [
