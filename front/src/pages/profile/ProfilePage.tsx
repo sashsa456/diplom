@@ -1,7 +1,7 @@
 import { Card, Typography, Button, Avatar, Tag, Space, Rate } from 'antd';
 import { EditOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { productList, users } from './const';
-import styles from './style/style.module.css';
+import styles from './ProfilePage.module.css';
 
 const { Title, Text } = Typography;
 
@@ -26,14 +26,12 @@ export const ProfilePage = () => {
           </div>
 
           <Space size="middle" className={styles.registrationSpace}>
-            <div>
-              <Text strong className={styles.registrationDate}>
-                {user.createdAt}
-              </Text>
-              <Text type="secondary" className={styles.registrationLabel}>
-                Дата регистрации
-              </Text>
-            </div>
+            <Text type="secondary" className={styles.registrationLabel}>
+              Дата регистрации
+            </Text>
+            <Text strong className={styles.registrationDate}>
+              {user.createdAt}
+            </Text>
           </Space>
 
           <div className={styles.roleTagWrapper}>

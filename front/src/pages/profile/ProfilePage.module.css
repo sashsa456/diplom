@@ -34,14 +34,17 @@
 }
 
 .registrationSpace {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   width: 100%;
   margin-bottom: 16px;
+  row-gap: 0px;
   text-align: center;
 }
 
 .registrationDate {
-  font-weight: 600; 
+  font-weight: 600;
 }
 
 .registrationLabel {
@@ -66,7 +69,7 @@
   line-height: 1.5715;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
-  background-color: #fafafa; 
+  background-color: #fafafa;
   color: #333;
   transition: all 0.3s;
 }
@@ -77,7 +80,6 @@
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
   background-color: #fff;
 }
-
 
 .settingsInputPasswordWrapper {
   margin-bottom: 16px;
