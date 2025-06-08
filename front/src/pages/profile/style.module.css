@@ -1,0 +1,126 @@
+.container {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: #f0f2f5;
+}
+
+.sidebar {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profileCard {
+  flex-shrink: 0;
+}
+
+.profileHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  margin-bottom: 8px;
+}
+
+.emailText {
+  margin-top: 4px;
+}
+
+.registrationSpace {
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.registrationDate {
+  font-weight: 600; 
+}
+
+.registrationLabel {
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 4px;
+}
+
+.roleTagWrapper {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.settingsInputWrapper {
+  margin-bottom: 12px;
+}
+
+.settingsInput {
+  margin-top: 8px;
+  width: 100%;
+  padding: 6px 11px;
+  font-size: 14px;
+  line-height: 1.5715;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background-color: #fafafa; 
+  color: #333;
+  transition: all 0.3s;
+}
+
+.settingsInput:focus {
+  border-color: #40a9ff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  background-color: #fff;
+}
+
+
+.settingsInputPasswordWrapper {
+  margin-bottom: 16px;
+}
+
+.content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.productsCard {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.productsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.productCard {
+  flex: 1 1 calc(33% - 16px);
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+  max-width: 320px;
+}
+
+.productTitle {
+  margin-bottom: 8px;
+}
+
+.productRatingWrapper {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+}
+
+.productRatingText {
+  margin-left: 8px;
+  color: rgba(0, 0, 0, 0.45);
+}
