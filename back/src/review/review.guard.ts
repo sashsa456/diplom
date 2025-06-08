@@ -1,10 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Request } from "express";
-import { ProductService } from "./product.service";
+import { ReviewService } from "./review.service";
 
 @Injectable()
-export class ProductGuard implements CanActivate {
-  constructor(private readonly productService: ProductService) {}
+export class ReviewGuard implements CanActivate {
+  constructor(private readonly reviewService: ReviewService) {}
 
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<Request>();
@@ -17,16 +17,19 @@ export class ProductGuard implements CanActivate {
       return true;
     }
 
-    const product = await this.productService.findOne({
+    const review = await this.reviewService.findOne({
       where: {
-        id: +request.params.id,
+        id: +request.params.reviewId,
         user: {
           id: request.user.id
+        },
+        product: {
+          id: +request.params.id
         }
       }
     });
 
-    if (!product) {
+    if (!review) {
       return false;
     }
 

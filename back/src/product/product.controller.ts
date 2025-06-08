@@ -1,3 +1,6 @@
+import { CreateReviewDto } from "@/review/dto/create-review.dto";
+import { UpdateReviewDto } from "@/review/dto/update-review.dto";
+import { ReviewService } from "@/review/review.service";
 import { AdminGuard } from "@/user/admin.guard";
 import { UserMe } from "@/user/user-me.decorator";
 import {
@@ -29,7 +32,10 @@ const productStatusMessages: Record<ProductStatus, string> = {
 @Controller("products")
 @ApiTags("products")
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly reviewService: ReviewService
+  ) {}
 
   @Post()
   create(
@@ -95,5 +101,50 @@ export class ProductController {
     return {
       message: productStatusMessages[updateStatusDto.status]
     };
+  }
+
+  /* Reviews */
+
+  @Post(":id/reviews")
+  async createReview(
+    @Param("id", ParseIntPipe) productId: number,
+    @UserMe("id") userId: number,
+    @Body() createReviewDto: CreateReviewDto
+  ) {
+    createReviewDto.productId = productId;
+    createReviewDto.userId = userId;
+    return this.reviewService.create(createReviewDto);
+  }
+
+  @Patch(":id/reviews/:reviewId")
+  @UseGuards(ProductGuard)
+  async updateReview(
+    @Param("id", ParseIntPipe) productId: number,
+    @UserMe("id") userId: number,
+    @Param("reviewId", ParseIntPipe) reviewId: number,
+    @Body() createReviewDto: UpdateReviewDto
+  ) {
+    return this.reviewService.update(
+      {
+        id: reviewId,
+        product: { id: productId },
+        user: { id: userId }
+      },
+      createReviewDto
+    );
+  }
+
+  @Delete(":id/reviews/:reviewId")
+  @UseGuards(ProductGuard)
+  async removeReview(
+    @Param("id", ParseIntPipe) productId: number,
+    @UserMe("id") userId: number,
+    @Param("reviewId", ParseIntPipe) reviewId: number
+  ) {
+    return this.reviewService.remove({
+      id: reviewId,
+      product: { id: productId },
+      user: { id: userId }
+    });
   }
 }

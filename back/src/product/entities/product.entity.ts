@@ -1,6 +1,13 @@
 import { TimestampEntity } from "@/common";
+import { ReviewEntity } from "@/review/entities/review.entity";
 import { UserEntity } from "@/user/entities/user.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn
+} from "typeorm";
 import {
   Category,
   Color,
@@ -47,7 +54,8 @@ export class ProductEntity extends TimestampEntity {
 
   @Column({
     type: "enum",
-    enum: Color
+    enum: Color,
+    array: true
   })
   colors: Color[];
 
@@ -93,4 +101,9 @@ export class ProductEntity extends TimestampEntity {
     nullable: false
   })
   user: UserEntity;
+
+  @OneToMany(() => ReviewEntity, review => review.product, {
+    eager: true
+  })
+  reviews: ReviewEntity[];
 }

@@ -1,5 +1,6 @@
 import { TimestampEntity } from "@/common";
 import { ProductEntity } from "@/product/entities/product.entity";
+import { ReviewEntity } from "@/review/entities/review.entity";
 import { Exclude } from "class-transformer";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -46,4 +47,7 @@ export class UserEntity extends TimestampEntity {
   /* Relations */
   @OneToMany(() => ProductEntity, product => product.user)
   products: ProductEntity[];
+
+  @OneToMany(() => ReviewEntity, review => review.user)
+  reviews: ReviewEntity[];
 }

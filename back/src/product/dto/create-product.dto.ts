@@ -51,12 +51,6 @@ export class CreateProductDto {
   @ApiProperty()
   season: Season;
 
-  // @IsNumber()
-  // @Min(1)
-  // @Max(5)
-  // @ApiProperty()
-  // rating: number;
-
   @IsEnum(Gender)
   @ApiProperty()
   gender: Gender;
