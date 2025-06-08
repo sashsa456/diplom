@@ -13,8 +13,19 @@ import { NotFoundPage } from '@/pages/not-found';
 import { ProfilePage } from '@/pages/profile';
 import { AdminPage } from '@/pages/admin/AdminPage';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
+import { CreateProductPage } from '@/pages/create-product';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
 function App() {
   return (
@@ -45,17 +56,17 @@ function App() {
                 }
               />
               <Route
-                path="/admin"
+                path="/create-product"
                 element={
                   <ProtectedRoute>
-                    <AdminPage />
+                    <CreateProductPage />
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/cart"
+                path="/admin"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute adminOnly>
                     <AdminPage />
                   </ProtectedRoute>
                 }

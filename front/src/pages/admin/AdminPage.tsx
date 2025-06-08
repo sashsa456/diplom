@@ -70,7 +70,7 @@ export const AdminPage = () => {
       render: (_: any, record: User) => (
         <Space size="middle">
           <Button type="primary" danger>
-            Заблокировать
+            Сделать администратором
           </Button>
           <Button danger>Удалить</Button>
         </Space>

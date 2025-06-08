@@ -54,6 +54,89 @@ export const useRegister = () => {
   });
 };
 
+export const useUserProfile = () => {
+  return useQuery({
+    queryKey: [queryKeys.user.profile],
+    queryFn: async () => {
+      const { data } = await apiClient.get(endpoints.user.profile);
+      return data;
+    },
+  });
+};
+
+interface ProductInput {
+  title: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  size: string;
+  color: string;
+  material: string;
+  season: string;
+  rating: number;
+  gender: string;
+  country: string;
+}
+
+export interface Product {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  size: string;
+  color: string;
+  material: string;
+  season: string;
+  rating: number;
+  gender: string;
+  country: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+export const useMyProducts = (status?: 'pending' | 'approved' | 'rejected') => {
+  return useQuery<Product[]>({
+    // Явно указываем тип Product[]
+    queryKey: queryKeys.products.myProducts(status),
+    queryFn: async () => {
+      const { data } = await apiClient.get(endpoints.products.myProducts, {
+        params: { status },
+      });
+      return data;
+    },
+  });
+};
+
+export const useCreateProduct = () => {
+  return useMutation<Product, Error, ProductInput>({
+    mutationFn: async (productData) => {
+      const { data } = await apiClient.post(
+        endpoints.products.create,
+        productData,
+      );
+      return data;
+    },
+  });
+};
+
+interface UpdateUserProfileInput {
+  username?: string;
+  email?: string;
+  password?: string;
+  oldPassword?: string;
+}
+
+export const useUpdateUser = () => {
+  return useMutation<any, Error, UpdateUserProfileInput>({
+    mutationFn: async (userData) => {
+      const { data } = await apiClient.patch(endpoints.user.profile, userData);
+      return data;
+    },
+  });
+};
+
 export const useProducts = (params?: {
   category?: string;
   search?: string;
@@ -94,25 +177,6 @@ export const useCreateReview = (productId: number) => {
         endpoints.reviews.create(productId),
         reviewData,
       );
-      return data;
-    },
-  });
-};
-
-export const useCart = () => {
-  return useQuery({
-    queryKey: [queryKeys.cart.items],
-    queryFn: async () => {
-      const { data } = await apiClient.get(endpoints.cart.list);
-      return data;
-    },
-  });
-};
-
-export const useAddToCart = () => {
-  return useMutation({
-    mutationFn: async (item: { productId: number; quantity: number }) => {
-      const { data } = await apiClient.post(endpoints.cart.add, item);
       return data;
     },
   });

@@ -22,7 +22,6 @@ import {
   TwitterIcon,
   VKIcon,
 } from 'react-share';
-import { useCartStore } from '@/shared/hooks';
 import { mockProduct, mockReviews } from './constants';
 import { Product } from '@/types/catalog';
 
@@ -54,22 +53,9 @@ export const ProductPage = () => {
     text: '',
   });
 
-  const addToCart = useCartStore((state) => state.addItem);
-
   const handleReviewSubmit = () => {
     message.success('Отзыв успешно добавлен');
     setNewReview({ rating: 0, text: '' });
-  };
-
-  const handleAddToCart = () => {
-    addToCart({
-      id: mockProduct.id,
-      title: mockProduct.title,
-      price: mockProduct.price,
-      image: mockProduct.image,
-      quantity: 1,
-    });
-    message.success('Товар добавлен в корзину');
   };
 
   const items = [
@@ -175,7 +161,7 @@ export const ProductPage = () => {
             </Space>
           </div>
 
-          <Button type="primary" size="large" block onClick={handleAddToCart}>
+          <Button type="primary" size="large" block>
             Добавить в корзину
           </Button>
         </Col>
