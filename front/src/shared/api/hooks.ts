@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient, endpoints, queryKeys } from './client';
 import { useAuthStore } from '../hooks';
+import { RcFile } from 'antd/es/upload';
 
 export const useLogin = () => {
   const setUser = useAuthStore((state) => state.setUser);
@@ -68,13 +69,12 @@ interface ProductInput {
   title: string;
   description: string;
   price: number;
-  image: string;
+  image: File;
   category: string;
   size: string;
   colors: string[];
   material: string;
   season: string;
-  rating: number;
   gender: string;
   countryMade: string;
 }
@@ -104,6 +104,16 @@ export interface User {
   refreshToken: string;
 }
 
+export interface Feedback {
+  id: number;
+  name: string;
+  email: string;
+  topic: string;
+  text: string;
+  createdAt: string;
+}
+
+
 export const useMyProducts = (status?: 'pending' | 'accepted' | 'rejected') => {
   return useQuery<Product[]>({
     queryKey: queryKeys.products.myProducts(status),
@@ -124,6 +134,11 @@ export const useCreateProduct = () => {
       const { data } = await apiClient.post(
         endpoints.products.create,
         productData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
       );
       return data;
     },
@@ -190,17 +205,35 @@ export const useCreateReview = (productId: number) => {
   });
 };
 
+
 export const useSendFeedback = () => {
   return useMutation({
-    mutationFn: async (feedbackData: {
-      name: string;
-      email: string;
-      topic: string;
-      text: string;
-    }) => {
+    mutationFn: async (feedbackData: Exclude<Feedback, 'id'>) => {
       const { data } = await apiClient.post(
         endpoints.feedbacks.create,
         feedbackData,
+      );
+      return data;
+    },
+  });
+};
+
+export const useFeedbacks = () => {
+  return useQuery({
+    queryKey: [queryKeys.feedbacks.all],
+    queryFn: async () => {
+      const { data } = await apiClient.get<Feedback[]>(endpoints.feedbacks.all);
+      return data;
+    },
+    initialData: [],
+  });
+};
+
+export const useDeleteFeedback = () => {
+  return useMutation({
+    mutationFn: async (feedbackId: number) => {
+      const { data } = await apiClient.delete(
+        `${endpoints.feedbacks.delete}/${feedbackId}`,
       );
       return data;
     },
@@ -297,3 +330,4 @@ export const useResubmitProduct = () => {
     },
   });
 };
+

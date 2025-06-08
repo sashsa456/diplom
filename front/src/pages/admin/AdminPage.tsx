@@ -21,44 +21,16 @@ import {
   Product,
   useUsers,
   useUpdateUserAdminStatus,
+  useFeedbacks,
+  useDeleteFeedback,
+  Feedback,
 } from '@/shared/api/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/client';
 
 const { Title, Text } = Typography;
 
-// Интерфейс для feedback
-interface Feedback {
-  id: number;
-  name: string;
-  email: string;
-  theme: string;
-  status: string;
-  dateRegistered: string;
-  message: string;
-}
 
-// Моковые данные для feedback
-const mockFeedbacks: Feedback[] = [
-  {
-    id: 1,
-    name: 'Анна',
-    email: 'anna@example.com',
-    theme: 'Ошибка на сайте',
-    status: 'Новый',
-    dateRegistered: '01.06.2025',
-    message: 'При оформлении заказа возникла ошибка',
-  },
-  {
-    id: 2,
-    name: 'Иван',
-    email: 'ivan@example.com',
-    theme: 'Предложение по улучшению',
-    status: 'Обработан',
-    dateRegistered: '02.06.2025',
-    message: 'Добавьте возможность фильтрации по размеру',
-  },
-];
 
 export const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('1');
@@ -68,11 +40,25 @@ export const AdminPage = () => {
 
   const { data: products, isLoading: isProductsLoading } = useProducts();
   const { data: users, isLoading: isUsersLoading } = useUsers();
+  const { data: feedbacks, isLoading: isFeedbacksLoading } = useFeedbacks();
   const updateProductStatusMutation = useUpdateProductStatus();
   const updateUserAdminStatusMutation = useUpdateUserAdminStatus();
+  const deleteFeedbackMutation = useDeleteFeedback();
 
   const pendingProducts =
     products?.filter((product: Product) => product.status === 'pending') || [];
+
+  const handleFeedbackDelete = async (feedbackId: number) => {
+    try {
+      await deleteFeedbackMutation.mutateAsync(feedbackId);
+      message.success('Отзыв успешно удален');
+      // Invalidate and refetch feedbacks to update the table
+      queryClient.invalidateQueries({ queryKey: [queryKeys.feedbacks.all] });
+    } catch (error) {
+      message.error('Ошибка при удалении отзыва');
+      console.error('Delete feedback error:', error);
+    }
+  };
 
   const handleProductStatusUpdate = async (
     productId: number,
@@ -162,35 +148,30 @@ export const AdminPage = () => {
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: 'Имя', dataIndex: 'name', key: 'name' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Тема', dataIndex: 'theme', key: 'theme' },
+    { title: 'Тема', dataIndex: 'topic', key: 'topic' },
     {
       title: 'Сообщение',
-      dataIndex: 'message',
-      key: 'message',
+      dataIndex: 'text',
+      key: 'text',
       render: (text: string) => (
         <span title={text}>
           {text.length > 100 ? `${text.substring(0, 100)}...` : text}
         </span>
       ),
     },
-    { title: 'Статус', dataIndex: 'status', key: 'status' },
     {
       title: 'Дата',
-      dataIndex: 'dateRegistered',
-      key: 'dateRegistered',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
       title: 'Действия',
       key: 'actions',
       render: (_: any, record: Feedback) => (
-        <Space size="middle">
-          <Button type="primary" danger>
-            Отметить как обработанный
-          </Button>
-          <Button type="link" danger>
-            Удалить
-          </Button>
-        </Space>
+        <Button danger onClick={() => handleFeedbackDelete(record.id)} loading={deleteFeedbackMutation.isPending}>
+          Удалить
+        </Button>
       ),
     },
   ];
@@ -322,7 +303,8 @@ export const AdminPage = () => {
           <Title level={4}>Управление обратной связью пользователей</Title>
           <Table
             columns={feedbackColumns}
-            dataSource={mockFeedbacks}
+            dataSource={feedbacks}
+            loading={isFeedbacksLoading}
             rowKey="id"
             pagination={false}
             scroll={{ x: 'max-content' }}
@@ -343,7 +325,7 @@ export const AdminPage = () => {
         <Col>
           <Text type="secondary">
             Пользователей: {users?.length || 0} Товаров на модерации:{' '}
-            {pendingProducts.length} feedback: {mockFeedbacks.length}
+            {pendingProducts.length} feedback: {feedbacks.length}
           </Text>
         </Col>
       </Row>

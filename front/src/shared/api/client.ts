@@ -87,6 +87,8 @@ export const endpoints = {
 
   feedbacks: {
     create: '/feedbacks',
+    all: '/feedbacks',
+    delete: '/feedbacks',
   },
 };
 
@@ -106,5 +108,8 @@ export const queryKeys = {
   },
   reviews: {
     list: (productId: number) => ['reviews', productId],
+  },
+  feedbacks: {
+    all: 'feedbacks',
   },
 };
