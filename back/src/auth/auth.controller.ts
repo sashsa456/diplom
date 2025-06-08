@@ -32,9 +32,9 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  @ApiBearerAuth()
+  @Public()
   @Post("refresh")
-  refresh(@UserMe("id") userId: number, @Body() refreshDto: RefreshDto) {
-    return this.authService.refresh(userId, refreshDto.refreshToken);
+  async refresh(@Body() refreshDto: RefreshDto) {
+    return this.authService.refresh(refreshDto.refreshToken);
   }
 }

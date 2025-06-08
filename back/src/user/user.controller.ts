@@ -2,11 +2,13 @@ import { mimeTypeFilter } from "@/common";
 import { imagePattern } from "@/common/utils/mimeTypeFilter";
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UploadedFile,
   UseGuards,
@@ -17,6 +19,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { diskStorage } from "multer";
 import { extname, join } from "path";
 import { AdminGuard } from "./admin.guard";
+import { UpdateUserDto } from "./dtos/update-user.dto";
 import { UserEntity } from "./entities/user.entity";
 import { UserMe } from "./user-me.decorator";
 import { UserService } from "./user.service";
@@ -64,6 +67,11 @@ export class UserController {
   @Get("me")
   me(@UserMe() user: UserEntity) {
     return user;
+  }
+
+  @Patch("me")
+  updateMe(@UserMe("id") userId: number, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(userId, updateUserDto);
   }
 
   @Post("me/avatar")
