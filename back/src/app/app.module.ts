@@ -4,6 +4,7 @@ import dbConfig from "@/config/db.config";
 import { validateEnv } from "@/config/env.config";
 import jwtConfig from "@/config/jwt.config";
 import tokenConfig from "@/config/token.config";
+import { FeedbackModule } from "@/feedback/feedback.module";
 import { ProductModule } from "@/product/product.module";
 import { UserModule } from "@/user/user.module";
 import { ClassSerializerInterceptor, Module } from "@nestjs/common";
@@ -50,7 +51,8 @@ import { AppService } from "./app.service";
     }),
     UserModule,
     AuthModule,
-    ProductModule
+    ProductModule,
+    FeedbackModule
   ],
   controllers: [AppController],
   providers: [
