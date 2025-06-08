@@ -69,7 +69,9 @@ export const endpoints = {
   },
   user: {
     profile: '/users/me',
+    uploadAvatar: '/users/me/avatar', 
   },
+
   products: {
     list: '/products',
     details: (id: number) => `/products/${id}`,

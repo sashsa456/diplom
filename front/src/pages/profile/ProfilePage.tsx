@@ -12,6 +12,8 @@ import {
   Form,
   message,
   Spin,
+  Tooltip,
+  Upload,
 } from 'antd';
 import { EditOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import {
@@ -19,6 +21,7 @@ import {
   useMyProducts,
   useUpdateUser,
   Product as APIProductType,
+  useUploadAvatar,
 } from '@/shared/api/hooks';
 import { useNavigate } from 'react-router-dom';
 import styles from './ProfilePage.module.css';
@@ -42,6 +45,7 @@ export const ProfilePage = () => {
 
   const [activeTab, setActiveTab] = useState('1');
   const [form] = Form.useForm();
+  const uploadAvatarMutation = useUploadAvatar();
 
   useEffect(() => {
     if (userProfile) {
@@ -51,6 +55,22 @@ export const ProfilePage = () => {
       });
     }
   }, [userProfile, form]);
+
+
+
+
+const handleAvatarChange = async (file: File) => {
+  try {
+    await uploadAvatarMutation.mutateAsync(file);
+    message.success('Аватар успешно обновлён');
+    
+  } catch (error) {
+    console.error(error);
+    message.error('Ошибка при загрузке аватара');
+  }
+};
+
+
 
   const handleUpdateProfile = async (values: any) => {
     try {
@@ -157,17 +177,33 @@ export const ProfilePage = () => {
     },
   ];
 
+
+  
+
+
   return (
     <div className={styles.container}>
       <div className={styles.sidebar}>
         <Card className={styles.profileCard}>
           <div className={styles.profileHeader}>
-            <Avatar
-              size={80}
-              icon={<UserOutlined />}
-              src={userProfile.avatar}
-              className={styles.avatar}
-            />
+            <Tooltip title="Нажмите, чтобы изменить аватар">
+  <Upload
+    showUploadList={false}
+    beforeUpload={(file) => {
+      handleAvatarChange(file);
+      return false; 
+    }}
+  >
+    <Avatar
+      size={80}
+      icon={ <UserOutlined />}
+      src={`http://localhost:3001/api${userProfile.avatar}`}
+      className={styles.avatar}
+      style={{ cursor: 'pointer' }}
+    />
+  </Upload>
+</Tooltip>
+
             <Text strong>{userProfile.username}</Text>
             <Text type="secondary" className={styles.emailText}>
               {userProfile.email}

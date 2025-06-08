@@ -59,6 +59,8 @@ export const useUserProfile = () => {
     queryKey: [queryKeys.user.profile],
     queryFn: async () => {
       const { data } = await apiClient.get(endpoints.user.profile);
+      console.log(data,'scacac');
+      
       return data;
     },
   });
@@ -198,3 +200,25 @@ export const useSendFeedback = () => {
     },
   });
 };
+
+
+
+
+export const useUploadAvatar = () =>{
+
+      return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const { data } = await apiClient.post(endpoints.user.uploadAvatar, formData, {
+          headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return data; 
+    },
+  });
+
+} 
