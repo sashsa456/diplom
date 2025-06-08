@@ -7,8 +7,9 @@ import { Layout } from '@widgets/layout';
 import { AuthPage } from '@pages/auth';
 import { CatalogPage } from '@pages/catalog';
 import { FeedbackPage } from '@pages/feedback';
-import { HomePage } from '@pages/home';
-import { ProductPage } from '@pages/product';
+import { HomePage } from '@/pages/home';
+import { ProductPage } from '@/pages/product';
+import { NotFoundPage } from '@/pages/not-found';
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ function App() {
               {/* <Route path="/profile" element={<ProfilePage />} /> */}
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Layout>
         </Router>

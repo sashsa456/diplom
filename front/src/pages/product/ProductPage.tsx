@@ -1,5 +1,6 @@
+// TODO: Переехать с моков
+
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
 import {
   Row,
   Col,
@@ -21,8 +22,9 @@ import {
   TwitterIcon,
   VKIcon,
 } from 'react-share';
-import { useCreateReview, useProduct, useReviews } from '@/shared/api/hooks';
 import { useCartStore } from '@/shared/hooks';
+import { mockProduct, mockReviews } from './constants';
+import { Product } from '@/types/catalog';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -35,49 +37,40 @@ interface Review {
   text: string;
 }
 
+const productDetails = [
+  { label: 'Материал', value: (product: Product) => product.material },
+  { label: 'Сезон', value: (product: Product) => product.season },
+  { label: 'Пол', value: (product: Product) => product.gender },
+  { label: 'Страна', value: (product: Product) => product.country },
+  { label: 'Размеры', value: (product: Product) => product.size.join(', ') },
+  { label: 'Цвет', value: (product: Product) => product.color },
+];
+
 export const ProductPage = () => {
-  const { id } = useParams();
+  // const { id } = useParams();
   const [activeTab, setActiveTab] = useState('1');
   const [newReview, setNewReview] = useState({
     rating: 0,
     text: '',
   });
 
-  const { data: product, isLoading: isProductLoading } = useProduct(Number(id));
-  const { data: reviews, isLoading: isReviewsLoading } = useReviews(Number(id));
-  const createReview = useCreateReview(Number(id));
   const addToCart = useCartStore((state) => state.addItem);
 
-  const handleReviewSubmit = async () => {
-    try {
-      await createReview.mutateAsync(newReview);
-      message.success('Отзыв успешно добавлен');
-      setNewReview({ rating: 0, text: '' });
-    } catch {
-      message.error('Ошибка при добавлении отзыва');
-    }
+  const handleReviewSubmit = () => {
+    message.success('Отзыв успешно добавлен');
+    setNewReview({ rating: 0, text: '' });
   };
 
   const handleAddToCart = () => {
-    if (product) {
-      addToCart({
-        id: product.id,
-        title: product.title,
-        price: product.price,
-        image: product.image,
-        quantity: 1,
-      });
-      message.success('Товар добавлен в корзину');
-    }
+    addToCart({
+      id: mockProduct.id,
+      title: mockProduct.title,
+      price: mockProduct.price,
+      image: mockProduct.image,
+      quantity: 1,
+    });
+    message.success('Товар добавлен в корзину');
   };
-
-  if (isProductLoading) {
-    return <div className="text-center py-5">Загрузка...</div>;
-  }
-
-  if (!product) {
-    return <div className="text-center py-5">Товар не найден</div>;
-  }
 
   const items = [
     {
@@ -85,10 +78,10 @@ export const ProductPage = () => {
       label: 'Характеристики',
       children: (
         <Row gutter={[24, 24]}>
-          {Object.entries(product.characteristics).map(([key, value]) => (
-            <Col xs={24} sm={12} key={key}>
-              <Text strong>{key}:</Text>
-              <Text className="ms-2">{value as string}</Text>
+          {productDetails.map(({ label, value }) => (
+            <Col xs={24} sm={12} key={label}>
+              <Text strong>{label}:</Text>
+              <Text className="ms-2">{value(mockProduct)}</Text>
             </Col>
           ))}
         </Row>
@@ -116,39 +109,31 @@ export const ProductPage = () => {
                 }
                 placeholder="Напишите ваш отзыв..."
               />
-              <Button
-                type="primary"
-                onClick={handleReviewSubmit}
-                loading={createReview.isPending}
-              >
+              <Button type="primary" onClick={handleReviewSubmit}>
                 Отправить
               </Button>
             </Space>
           </Card>
 
-          {isReviewsLoading ? (
-            <div className="text-center py-3">Загрузка отзывов...</div>
-          ) : (
-            <Space direction="vertical" style={{ width: '100%' }}>
-              {reviews?.map((review: Review) => (
-                <Card key={review.id}>
-                  <Space align="start">
-                    <Avatar>{review.author[0]}</Avatar>
+          <Space direction="vertical" style={{ width: '100%' }}>
+            {mockReviews.map((review: Review) => (
+              <Card key={review.id}>
+                <Space align="start">
+                  <Avatar>{review.author[0]}</Avatar>
+                  <div>
+                    <Text strong>{review.author}</Text>
                     <div>
-                      <Text strong>{review.author}</Text>
-                      <div>
-                        <Rate disabled defaultValue={review.rating} />
-                        <Text type="secondary" className="ms-2">
-                          {review.date}
-                        </Text>
-                      </div>
-                      <Paragraph className="mt-2">{review.text}</Paragraph>
+                      <Rate disabled defaultValue={review.rating} />
+                      <Text type="secondary" className="ms-2">
+                        {review.date}
+                      </Text>
                     </div>
-                  </Space>
-                </Card>
-              ))}
-            </Space>
-          )}
+                    <Paragraph className="mt-2">{review.text}</Paragraph>
+                  </div>
+                </Space>
+              </Card>
+            ))}
+          </Space>
         </div>
       ),
     },
@@ -159,21 +144,21 @@ export const ProductPage = () => {
       <Row gutter={[32, 32]}>
         <Col xs={24} md={12}>
           <img
-            src={product.image}
-            alt={product.title}
+            src={mockProduct.image}
+            alt={mockProduct.title}
             style={{ width: '100%', height: 'auto', borderRadius: 8 }}
           />
         </Col>
         <Col xs={24} md={12}>
-          <Title level={2}>{product.title}</Title>
+          <Title level={2}>{mockProduct.title}</Title>
           <Title level={3} className="text-primary">
-            {product.price}
+            {mockProduct.price.toString()} ₽
           </Title>
           <Space className="mb-4">
-            <Rate disabled defaultValue={product.rating} />
-            <Text>({product.rating})</Text>
+            <Rate disabled defaultValue={mockProduct.rating} />
+            <Text>({mockProduct.rating})</Text>
           </Space>
-          <Paragraph>{product.description}</Paragraph>
+          <Paragraph>{mockProduct.description}</Paragraph>
 
           <div className="mb-4">
             <Text strong>Поделиться:</Text>

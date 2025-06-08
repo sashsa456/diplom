@@ -1,82 +1,57 @@
-import React, { useState } from 'react';
+// TODO: Переехать с моков
+
+import { useState } from 'react';
 import {
   Row,
   Col,
   Card,
   Input,
   Slider,
-  Checkbox,
-  Space,
   Typography,
   Button,
   Drawer,
-  Spin,
+  Rate,
+  Pagination,
 } from 'antd';
 import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { useProducts } from '@/shared/api/hooks';
+import { Product, Filters } from '../../types/catalog';
+import { FilterSection } from './components/FilterSection';
+import { useFilteredProducts } from './hooks/useFilteredProducts';
+import { usePagination } from './hooks/usePagination';
+import {
+  categories,
+  colors,
+  countries,
+  genders,
+  materials,
+  mockProducts,
+  seasons,
+  sizes,
+} from './constants';
 
 const { Title, Text } = Typography;
 
-interface Product {
-  id: number;
-  title: string;
-  image: string;
-  price: string;
-  category?: string;
-  size?: string;
-  color?: string;
-  material?: string;
-  season?: string;
-}
-
-interface Filters {
-  category: string[];
-  size: string[];
-  color: string[];
-  material: string[];
-  season: string[];
-  priceRange: number[];
-}
-
-// Mock data for filters
-const categories = ['Комбинезоны', 'Куртки', 'Брюки', 'Футболки', 'Платья'];
-
-const sizes = [
-  '0-3 месяца',
-  '3-6 месяцев',
-  '6-12 месяцев',
-  '1-2 года',
-  '2-3 года',
-];
-
-const colors = ['Синий', 'Красный', 'Зеленый', 'Желтый', 'Черный'];
-
-const materials = ['Хлопок', 'Шерсть', 'Синтетика', 'Джинс'];
-
-const seasons = ['Лето', 'Зима', 'Демисезон'];
+const initialFilters: Filters = {
+  category: [],
+  size: [],
+  color: [],
+  material: [],
+  season: [],
+  priceRange: [0, 10000],
+  rating: 0,
+  gender: [],
+  country: [],
+};
 
 export const CatalogPage = () => {
-  const [filters, setFilters] = useState<Filters>({
-    category: [],
-    size: [],
-    color: [],
-    material: [],
-    season: [],
-    priceRange: [0, 10000],
-  });
-
+  const [filters, setFilters] = useState<Filters>(initialFilters);
   const [isFilterDrawerVisible, setIsFilterDrawerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: products, isLoading } = useProducts({
-    search: searchQuery,
-    category: filters.category.join(','),
-  });
-
   const handleFilterChange = (
     filterType: keyof Filters,
-    value: string[] | number[],
+    value: string[] | number | [number, number],
   ) => {
     setFilters((prev) => ({
       ...prev,
@@ -84,37 +59,16 @@ export const CatalogPage = () => {
     }));
   };
 
-  const FilterSection = ({
-    title,
-    options,
-    filterType,
-  }: {
-    title: string;
-    options: string[];
-    filterType: keyof Filters;
-  }) => (
-    <div className="mb-4">
-      <Title level={5}>{title}</Title>
-      <Space direction="vertical">
-        {options.map((option) => (
-          <Checkbox
-            key={option}
-            checked={(filters[filterType] as string[]).includes(option)}
-            onChange={(e) => {
-              const newValues = e.target.checked
-                ? [...(filters[filterType] as string[]), option]
-                : (filters[filterType] as string[]).filter(
-                    (item) => item !== option,
-                  );
-              handleFilterChange(filterType, newValues);
-            }}
-          >
-            {option}
-          </Checkbox>
-        ))}
-      </Space>
-    </div>
+  const filteredProducts = useFilteredProducts(
+    mockProducts,
+    filters,
+    searchQuery,
   );
+  const { currentPage, setCurrentPage, getPaginatedItems, getTotalPages } =
+    usePagination(16);
+
+  const paginatedProducts = getPaginatedItems(filteredProducts);
+  const totalPages = getTotalPages(filteredProducts.length);
 
   return (
     <div className="container">
@@ -137,13 +91,9 @@ export const CatalogPage = () => {
         className="mb-4"
       />
 
-      {isLoading ? (
-        <div className="text-center py-5">
-          <Spin size="large" />
-        </div>
-      ) : (
-        <Row gutter={[24, 24]}>
-          {products?.map((product: Product) => (
+      <Row gutter={[24, 24]}>
+        {paginatedProducts.length > 0 ? (
+          paginatedProducts.map((product: Product) => (
             <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
               <Card
                 hoverable
@@ -155,7 +105,19 @@ export const CatalogPage = () => {
                   />
                 }
               >
-                <Card.Meta title={product.title} description={product.price} />
+                <Card.Meta
+                  title={product.title}
+                  description={
+                    <>
+                      <Text strong>{product.price} ₽</Text>
+                      <br />
+                      <Rate allowHalf disabled defaultValue={product.rating} />
+                      <Text type="secondary" className="ms-2">
+                        ({product.rating})
+                      </Text>
+                    </>
+                  }
+                />
                 <Button type="primary" block className="mt-3">
                   <Link
                     to={`/product/${product.id}`}
@@ -166,8 +128,26 @@ export const CatalogPage = () => {
                 </Button>
               </Card>
             </Col>
-          ))}
-        </Row>
+          ))
+        ) : (
+          <Col span={24}>
+            <div className="text-center py-5">
+              <Text>Продукты не найдены по вашим критериям.</Text>
+            </div>
+          </Col>
+        )}
+      </Row>
+
+      {totalPages > 1 && (
+        <div className="text-center mt-4">
+          <Pagination
+            current={currentPage}
+            total={filteredProducts.length}
+            pageSize={16}
+            onChange={setCurrentPage}
+            showSizeChanger={false}
+          />
+        </div>
       )}
 
       <Drawer
@@ -182,9 +162,12 @@ export const CatalogPage = () => {
           <Slider
             range
             value={filters.priceRange}
-            onChange={(value) => handleFilterChange('priceRange', value)}
+            onChange={(value) =>
+              handleFilterChange('priceRange', value as [number, number])
+            }
             min={0}
             max={10000}
+            step={100}
           />
           <Text>
             {filters.priceRange[0]} ₽ - {filters.priceRange[1]} ₽
@@ -192,18 +175,65 @@ export const CatalogPage = () => {
         </div>
 
         <FilterSection
+          title="Рейтинг"
+          options={[5, 4, 3, 2, 1]}
+          filterType="rating"
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+        <FilterSection
+          title="Пол"
+          options={genders}
+          filterType="gender"
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+        <FilterSection
+          title="Страна"
+          options={countries}
+          filterType="country"
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+        <FilterSection
           title="Категории"
           options={categories}
           filterType="category"
+          filters={filters}
+          onFilterChange={handleFilterChange}
         />
-        <FilterSection title="Размеры" options={sizes} filterType="size" />
-        <FilterSection title="Цвета" options={colors} filterType="color" />
+        <FilterSection
+          title="Размеры"
+          options={sizes}
+          filterType="size"
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+        <FilterSection
+          title="Цвета"
+          options={colors}
+          filterType="color"
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
         <FilterSection
           title="Материалы"
           options={materials}
           filterType="material"
+          filters={filters}
+          onFilterChange={handleFilterChange}
         />
-        <FilterSection title="Сезоны" options={seasons} filterType="season" />
+        <FilterSection
+          title="Сезоны"
+          options={seasons}
+          filterType="season"
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+
+        <Button type="default" block onClick={() => setFilters(initialFilters)}>
+          Сбросить все фильтры
+        </Button>
       </Drawer>
     </div>
   );
