@@ -17,7 +17,7 @@ export class CreateFeedbackDto {
   topic: string;
 
   @IsString()
-  @Length(1, 2000)
+  @Length(10, 2000)
   @ApiProperty()
   text: string;
 }

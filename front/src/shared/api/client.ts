@@ -85,8 +85,8 @@ export const endpoints = {
     create: (productId: number) => `/products/${productId}/reviews`,
   },
 
-  feedback: {
-    create: '/feedback',
+  feedbacks: {
+    create: '/feedbacks',
   },
 };
 

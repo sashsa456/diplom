@@ -8,8 +8,8 @@ const { TextArea } = Input;
 interface FeedbackFormData {
   name: string;
   email: string;
-  subject: string;
-  message: string;
+  topic: string;
+  text: string;
 }
 
 export const FeedbackPage = () => {
@@ -77,7 +77,7 @@ export const FeedbackPage = () => {
             </Col>
             <Col xs={24}>
               <Form.Item
-                name="subject"
+                name="topic"
                 label="Тема"
                 rules={[
                   {
@@ -95,7 +95,7 @@ export const FeedbackPage = () => {
             </Col>
             <Col xs={24}>
               <Form.Item
-                name="message"
+                name="text"
                 label="Сообщение"
                 rules={[
                   {

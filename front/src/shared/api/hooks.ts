@@ -195,11 +195,11 @@ export const useSendFeedback = () => {
     mutationFn: async (feedbackData: {
       name: string;
       email: string;
-      subject: string;
-      message: string;
+      topic: string;
+      text: string;
     }) => {
       const { data } = await apiClient.post(
-        endpoints.feedback.create,
+        endpoints.feedbacks.create,
         feedbackData,
       );
       return data;
