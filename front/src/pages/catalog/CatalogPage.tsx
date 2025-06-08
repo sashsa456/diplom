@@ -1,5 +1,3 @@
-// TODO: Переехать с моков
-
 import { useState } from 'react';
 import {
   Row,
@@ -12,6 +10,7 @@ import {
   Drawer,
   Rate,
   Pagination,
+  Spin,
 } from 'antd';
 import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
@@ -25,10 +24,10 @@ import {
   countries,
   genders,
   materials,
-  mockProducts,
   seasons,
   sizes,
 } from './constants';
+import { useProducts } from '@/shared/api/hooks';
 
 const { Title, Text } = Typography;
 
@@ -49,6 +48,8 @@ export const CatalogPage = () => {
   const [isFilterDrawerVisible, setIsFilterDrawerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const { data: products, isLoading, isError, error } = useProducts();
+
   const handleFilterChange = (
     filterType: keyof Filters,
     value: string[] | number | [number, number],
@@ -60,7 +61,7 @@ export const CatalogPage = () => {
   };
 
   const filteredProducts = useFilteredProducts(
-    mockProducts,
+    products || [],
     filters,
     searchQuery,
   );
@@ -69,6 +70,25 @@ export const CatalogPage = () => {
 
   const paginatedProducts = getPaginatedItems(filteredProducts);
   const totalPages = getTotalPages(filteredProducts.length);
+
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spin fullscreen size="large" tip="Загрузка товаров..." />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-5">
+        <Title level={3} type="danger">
+          Ошибка загрузки товаров
+        </Title>
+        <Text>{error?.message || 'Произошла ошибка при загрузке данных.'}</Text>
+      </div>
+    );
+  }
 
   return (
     <div className="container">

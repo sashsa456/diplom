@@ -59,8 +59,6 @@ export const useUserProfile = () => {
     queryKey: [queryKeys.user.profile],
     queryFn: async () => {
       const { data } = await apiClient.get(endpoints.user.profile);
-      console.log(data,'scacac');
-      
       return data;
     },
   });
@@ -73,12 +71,12 @@ interface ProductInput {
   image: string;
   category: string;
   size: string;
-  color: string;
+  colors: string[];
   material: string;
   season: string;
   rating: number;
   gender: string;
-  country: string;
+  countryMade: string;
 }
 
 export interface Product {
@@ -89,24 +87,33 @@ export interface Product {
   image: string;
   category: string;
   size: string;
-  color: string;
+  colors: string[];
   material: string;
   season: string;
   rating: number;
   gender: string;
-  country: string;
+  countryMade: string;
   status: 'pending' | 'approved' | 'rejected';
 }
 
-export const useMyProducts = (status?: 'pending' | 'approved' | 'rejected') => {
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export const useMyProducts = (status?: 'pending' | 'accepted' | 'rejected') => {
   return useQuery<Product[]>({
-    // Явно указываем тип Product[]
     queryKey: queryKeys.products.myProducts(status),
     queryFn: async () => {
       const { data } = await apiClient.get(endpoints.products.myProducts, {
         params: { status },
       });
-      return data;
+      return data.products.filter((product: Product) =>
+        status ? product.status === status : true,
+      );
     },
   });
 };
@@ -127,11 +134,10 @@ interface UpdateUserProfileInput {
   username?: string;
   email?: string;
   password?: string;
-  oldPassword?: string;
 }
 
 export const useUpdateUser = () => {
-  return useMutation<any, Error, UpdateUserProfileInput>({
+  return useMutation<User, Error, UpdateUserProfileInput>({
     mutationFn: async (userData) => {
       const { data } = await apiClient.patch(endpoints.user.profile, userData);
       return data;
@@ -201,24 +207,93 @@ export const useSendFeedback = () => {
   });
 };
 
-
-
-
-export const useUploadAvatar = () =>{
-
-      return useMutation({
+export const useUploadAvatar = () => {
+  return useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const { data } = await apiClient.post(endpoints.user.uploadAvatar, formData, {
+      const { data } = await apiClient.post(
+        endpoints.user.uploadAvatar,
+        formData,
+        {
           headers: {
-          'Content-Type': 'multipart/form-data',
+            'Content-Type': 'multipart/form-data',
+          },
         },
-      });
+      );
 
-      return data; 
+      return data;
     },
   });
+};
 
-} 
+export const useUpdateProductStatus = () => {
+  return useMutation<
+    { message: string },
+    Error,
+    { productId: number; status: 'accepted' | 'rejected' }
+  >({
+    mutationFn: async ({ productId, status }) => {
+      const { data } = await apiClient.post(
+        `${endpoints.products.details(productId)}/status`,
+        { status },
+      );
+      return data;
+    },
+  });
+};
+
+export const useUsers = () => {
+  return useQuery({
+    queryKey: [queryKeys.user.all],
+    queryFn: async () => {
+      const { data } = await apiClient.get(endpoints.user.all);
+      return data;
+    },
+  });
+};
+
+export const useUpdateUserAdminStatus = () => {
+  return useMutation<
+    { message: string },
+    Error,
+    { userId: number; isAdmin: boolean }
+  >({
+    mutationFn: async ({ userId, isAdmin }) => {
+      const { data } = await apiClient.patch(
+        `${endpoints.user.all}/${userId}/admin`,
+        { isAdmin },
+      );
+      return data;
+    },
+  });
+};
+
+export const useUpdateProduct = () => {
+  return useMutation<
+    Product,
+    Error,
+    { productId: number; data: Partial<ProductInput> }
+  >({
+    mutationFn: async ({ productId, data }) => {
+      const { data: response } = await apiClient.patch(
+        endpoints.products.details(productId),
+        data,
+      );
+      return response;
+    },
+  });
+};
+
+export const useResubmitProduct = () => {
+  return useMutation<{ message: string }, Error, { productId: number }>({
+    mutationFn: async ({ productId }) => {
+      const { data } = await apiClient.post(
+        `${endpoints.products.details(productId)}/status`,
+        { status: 'pending' },
+      );
+      return data;
+    },
+  });
+};

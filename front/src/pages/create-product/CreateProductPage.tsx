@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card,
@@ -7,86 +6,72 @@ import {
   InputNumber,
   Select,
   Button,
-  Upload,
   message,
   Typography,
+  Upload,
 } from 'antd';
+import type { UploadFile } from 'antd/es/upload/interface';
 import { UploadOutlined } from '@ant-design/icons';
 import { useCreateProduct } from '@/shared/api/hooks';
+import {
+  PRODUCT_CATEGORIES,
+  PRODUCT_SIZES,
+  PRODUCT_COLORS,
+  PRODUCT_MATERIALS,
+  PRODUCT_SEASONS,
+  PRODUCT_GENDERS,
+  PRODUCT_COUNTRIES,
+} from '@/shared/constants/product';
+import { FORM_FIELDS, FORM_RULES } from './constants';
 import styles from './CreateProductPage.module.css';
+import { useState } from 'react';
 
 const { Title } = Typography;
 const { TextArea } = Input;
 
-const categories = [
-  { value: 'clothing', label: 'Одежда' },
-  { value: 'shoes', label: 'Обувь' },
-  { value: 'accessories', label: 'Аксессуары' },
-];
-
-const sizes = [
-  { value: 'XS', label: 'XS' },
-  { value: 'S', label: 'S' },
-  { value: 'M', label: 'M' },
-  { value: 'L', label: 'L' },
-  { value: 'XL', label: 'XL' },
-];
-
-const colors = [
-  { value: 'red', label: 'Красный' },
-  { value: 'blue', label: 'Синий' },
-  { value: 'green', label: 'Зеленый' },
-  { value: 'black', label: 'Черный' },
-  { value: 'white', label: 'Белый' },
-];
-
-const materials = [
-  { value: 'cotton', label: 'Хлопок' },
-  { value: 'wool', label: 'Шерсть' },
-  { value: 'silk', label: 'Шелк' },
-  { value: 'leather', label: 'Кожа' },
-];
-
-const seasons = [
-  { value: 'summer', label: 'Лето' },
-  { value: 'winter', label: 'Зима' },
-  { value: 'spring', label: 'Весна' },
-  { value: 'autumn', label: 'Осень' },
-];
-
-const genders = [
-  { value: 'male', label: 'Мужской' },
-  { value: 'female', label: 'Женский' },
-  { value: 'unisex', label: 'Унисекс' },
-];
+interface CreateProductFormData {
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  size: string;
+  colors: string[];
+  material: string;
+  season: string;
+  gender: string;
+  countryMade: string;
+  image?: string;
+}
 
 export const CreateProductPage = () => {
   const navigate = useNavigate();
-  const [form] = Form.useForm();
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [form] = Form.useForm<CreateProductFormData>();
   const createProduct = useCreateProduct();
 
-  const handleSubmit = async (values: any) => {
+  const [uploadedFileList, setUploadedFileList] = useState<UploadFile[]>([]);
+
+  const getBase64 = (file: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+
+  const handleSubmit = async (values: CreateProductFormData) => {
     try {
-      await createProduct.mutateAsync({
+      const productData = {
         ...values,
-        image: imageUrl,
-        rating: 0, // Начальный рейтинг для нового товара
-      });
+        image: values.image || '',
+        rating: 0,
+      };
+      console.log('Отправляемые данные продукта:', productData);
+      await createProduct.mutateAsync(productData);
       message.success('Товар успешно создан!');
       navigate('/profile');
     } catch (error) {
       message.error('Ошибка при создании товара');
       console.error('Create product error:', error);
-    }
-  };
-
-  const handleImageUpload = (info: any) => {
-    if (info.file.status === 'done') {
-      setImageUrl(info.file.response.url);
-      message.success('Изображение успешно загружено');
-    } else if (info.file.status === 'error') {
-      message.error('Ошибка при загрузке изображения');
     }
   };
 
@@ -101,120 +86,144 @@ export const CreateProductPage = () => {
           className={styles.form}
         >
           <Form.Item
-            name="title"
-            label="Название товара"
-            rules={[
-              {
-                required: true,
-                message: 'Пожалуйста, введите название товара',
-              },
-            ]}
+            name={FORM_FIELDS.title.name}
+            label={FORM_FIELDS.title.label}
+            rules={[FORM_RULES.required('введите название товара')]}
           >
-            <Input placeholder="Введите название товара" />
+            <Input placeholder={FORM_FIELDS.title.placeholder} />
           </Form.Item>
 
           <Form.Item
-            name="description"
-            label="Описание"
-            rules={[
-              {
-                required: true,
-                message: 'Пожалуйста, введите описание товара',
-              },
-            ]}
+            name={FORM_FIELDS.description.name}
+            label={FORM_FIELDS.description.label}
+            rules={[FORM_RULES.required('введите описание товара')]}
           >
-            <TextArea rows={4} placeholder="Введите описание товара" />
+            <TextArea
+              rows={4}
+              placeholder={FORM_FIELDS.description.placeholder}
+            />
           </Form.Item>
 
           <Form.Item
-            name="price"
-            label="Цена"
-            rules={[
-              { required: true, message: 'Пожалуйста, введите цену товара' },
-            ]}
+            name={FORM_FIELDS.price.name}
+            label={FORM_FIELDS.price.label}
+            rules={[FORM_RULES.required('введите цену товара')]}
           >
             <InputNumber min={0} prefix="₽" style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.Item
-            name="category"
-            label="Категория"
-            rules={[
-              { required: true, message: 'Пожалуйста, выберите категорию' },
-            ]}
+            name={FORM_FIELDS.category.name}
+            label={FORM_FIELDS.category.label}
+            rules={[FORM_RULES.required('выберите категорию')]}
           >
-            <Select options={categories} placeholder="Выберите категорию" />
+            <Select
+              options={PRODUCT_CATEGORIES}
+              placeholder={FORM_FIELDS.category.placeholder}
+            />
           </Form.Item>
 
           <Form.Item
-            name="size"
-            label="Размер"
-            rules={[{ required: true, message: 'Пожалуйста, выберите размер' }]}
+            name={FORM_FIELDS.size.name}
+            label={FORM_FIELDS.size.label}
+            rules={[FORM_RULES.required('выберите размер')]}
           >
-            <Select options={sizes} placeholder="Выберите размер" />
+            <Select
+              options={PRODUCT_SIZES}
+              placeholder={FORM_FIELDS.size.placeholder}
+            />
           </Form.Item>
 
           <Form.Item
-            name="color"
-            label="Цвет"
-            rules={[{ required: true, message: 'Пожалуйста, выберите цвет' }]}
+            name={FORM_FIELDS.colors.name}
+            label={FORM_FIELDS.colors.label}
+            rules={[FORM_RULES.required('выберите цвета')]}
           >
-            <Select options={colors} placeholder="Выберите цвет" />
+            <Select
+              mode="multiple"
+              options={PRODUCT_COLORS}
+              placeholder={FORM_FIELDS.colors.placeholder}
+            />
           </Form.Item>
 
           <Form.Item
-            name="material"
-            label="Материал"
-            rules={[
-              { required: true, message: 'Пожалуйста, выберите материал' },
-            ]}
+            name={FORM_FIELDS.material.name}
+            label={FORM_FIELDS.material.label}
+            rules={[FORM_RULES.required('выберите материал')]}
           >
-            <Select options={materials} placeholder="Выберите материал" />
+            <Select
+              options={PRODUCT_MATERIALS}
+              placeholder={FORM_FIELDS.material.placeholder}
+            />
           </Form.Item>
 
           <Form.Item
-            name="season"
-            label="Сезон"
-            rules={[{ required: true, message: 'Пожалуйста, выберите сезон' }]}
+            name={FORM_FIELDS.season.name}
+            label={FORM_FIELDS.season.label}
+            rules={[FORM_RULES.required('выберите сезон')]}
           >
-            <Select options={seasons} placeholder="Выберите сезон" />
+            <Select
+              options={PRODUCT_SEASONS}
+              placeholder={FORM_FIELDS.season.placeholder}
+            />
           </Form.Item>
 
           <Form.Item
-            name="gender"
-            label="Пол"
-            rules={[{ required: true, message: 'Пожалуйста, выберите пол' }]}
+            name={FORM_FIELDS.gender.name}
+            label={FORM_FIELDS.gender.label}
+            rules={[FORM_RULES.required('выберите пол')]}
           >
-            <Select options={genders} placeholder="Выберите пол" />
+            <Select
+              options={PRODUCT_GENDERS}
+              placeholder={FORM_FIELDS.gender.placeholder}
+            />
           </Form.Item>
 
           <Form.Item
-            name="country"
-            label="Страна производитель"
-            rules={[
-              {
-                required: true,
-                message: 'Пожалуйста, введите страну производителя',
-              },
-            ]}
+            name={FORM_FIELDS.countryMade.name}
+            label={FORM_FIELDS.countryMade.label}
+            rules={[FORM_RULES.required('выберите страну производителя')]}
           >
-            <Input placeholder="Введите страну производителя" />
+            <Select
+              options={PRODUCT_COUNTRIES}
+              placeholder={FORM_FIELDS.countryMade.placeholder}
+            />
           </Form.Item>
-
           <Form.Item
+            name="image"
             label="Изображение товара"
             rules={[
               {
-                required: true,
-                message: 'Пожалуйста, загрузите изображение товара',
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error('Пожалуйста, загрузите изображение'),
+                    );
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
             <Upload
-              name="file"
-              action="/api/upload" // TODO: Заменить на реальный эндпоинт загрузки
-              onChange={handleImageUpload}
+              fileList={uploadedFileList}
+              listType="picture-card"
               maxCount={1}
+              beforeUpload={() => false}
+              onChange={async ({ fileList }) => {
+                setUploadedFileList(fileList);
+                if (fileList.length > 0) {
+                  const file = fileList[0];
+                  if (file.originFileObj) {
+                    const base64 = await getBase64(file.originFileObj as Blob);
+                    form.setFieldsValue({ image: base64 });
+                  } else {
+                    form.setFieldsValue({ image: undefined });
+                  }
+                } else {
+                  form.setFieldsValue({ image: undefined });
+                }
+              }}
             >
               <Button icon={<UploadOutlined />}>Загрузить изображение</Button>
             </Upload>

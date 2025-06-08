@@ -1,0 +1,35 @@
+.heroSection {
+  background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+  padding: 3rem 0;
+  margin-bottom: 3rem;
+  text-align: center;
+  color: white;
+}
+
+.categoryCard {
+  border-radius: 8px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.categoryIcon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.categoryText {
+  font-size: 14px;
+}
+
+.productImage {
+  height: 200px;
+  object-fit: cover;
+}
+
+.productRating {
+  margin-left: 0.5rem;
+}

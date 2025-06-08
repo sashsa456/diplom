@@ -11,9 +11,9 @@ import { HomePage } from '@/pages/home';
 import { ProductPage } from '@/pages/product';
 import { NotFoundPage } from '@/pages/not-found';
 import { ProfilePage } from '@/pages/profile';
-import { AdminPage } from '@/pages/admin/AdminPage';
-import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
+import { AdminPage } from '@/pages/admin';
 import { CreateProductPage } from '@/pages/create-product';
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,7 +66,7 @@ function App() {
               <Route
                 path="/admin"
                 element={
-                  <ProtectedRoute adminOnly>
+                  <ProtectedRoute>
                     <AdminPage />
                   </ProtectedRoute>
                 }

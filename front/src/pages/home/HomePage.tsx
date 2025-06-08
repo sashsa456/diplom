@@ -1,63 +1,87 @@
 import { useState } from 'react';
-import { Typography, Row, Col, Card, Button, Input, Rate, Select } from 'antd';
+import { Typography, Row, Col, Card, Button, Rate, Select, Spin } from 'antd';
 import { Link } from 'react-router-dom';
-import { useFeaturedProducts } from './hooks/useFeaturedProducts';
+import { useProducts, Product } from '@/shared/api/hooks';
+import {
+  PRODUCT_SIZES,
+  PRODUCT_GENDERS,
+  PRODUCT_SEASONS,
+} from '@/shared/constants/product';
+import styles from './HomePage.module.css';
 
 const { Title, Text } = Typography;
 
-// Моковые данные для категорий и фильтров (позже можно вынести в константы)
-const categories = [
-  { key: 'toddler', label: 'Для малышей', icon: '👶' },
-  { key: 'preschool', label: 'Для дошкольников', icon: '👧' },
-  { key: 'outerwear', label: 'Верхняя одежда', icon: '👕' },
-  { key: 'accessories', label: 'Аксессуары', icon: '🧦' },
+interface CategoryItem {
+  key: string;
+  label: string;
+  icon: string;
+}
+
+const categories: CategoryItem[] = [
+  { key: 'Верхняя одежда', label: 'Верхняя одежда', icon: '👕' },
+  { key: 'Нижнее белье', label: 'Нижнее белье', icon: '🩲' },
+  { key: 'Одежда для сна', label: 'Одежда для сна', icon: '😴' },
+  { key: 'Головные уборы', label: 'Головные уборы', icon: '🧢' },
+  { key: 'Носки', label: 'Носки', icon: '🧦' },
+  { key: 'Обувь', label: 'Обувь', icon: '👟' },
+  {
+    key: 'Одежда для новорожденных',
+    label: 'Одежда для новорожденных',
+    icon: '👶',
+  },
+  {
+    key: 'Одежда для особых случаев',
+    label: 'Одежда для особых случаев',
+    icon: '👗',
+  },
 ];
 
-const sizes = [
-  '50',
-  '60',
-  '70',
-  '80',
-  '90',
-  '100',
-  '110',
-  '120',
-  '130',
-  '140',
-  '150',
-  '160',
-  '170',
-  '180',
-  '190',
-  '200',
-];
-const seasons = ['Лето', 'Зима', 'Демисезон'];
-const genders = ['Мальчик', 'Девочка', 'Унисекс'];
+const sizes = PRODUCT_SIZES;
+const seasons = PRODUCT_SEASONS;
+const genders = PRODUCT_GENDERS;
 
 export const HomePage = () => {
-  const featuredProducts = useFeaturedProducts();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { data: allProducts, isLoading, error } = useProducts();
   const [filters, setFilters] = useState({
-    size: [],
-    age: [],
-    season: [],
-    gender: [],
-    price: [],
+    size: [] as string[],
+    age: [] as string[],
+    season: [] as string[],
+    gender: [] as string[],
+    price: [] as string[],
   });
 
-  const handleFilterChange = (filterType: string, value: any) => {
+  type FilterValue = string | string[];
+  const handleFilterChange = (filterType: string, value: FilterValue) => {
     setFilters((prev) => ({ ...prev, [filterType]: value }));
   };
+
+  const featuredProducts = (allProducts || [])
+    .filter((product: Product) => product.rating === 5)
+    .slice(0, 6);
+
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spin fullscreen size="large" tip="Загрузка товаров..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-5">
+        <Title level={3} type="danger">
+          Ошибка загрузки товаров
+        </Title>
+        <Text>{error?.message || 'Не удалось загрузить товары'}</Text>
+      </div>
+    );
+  }
 
   return (
     <div>
       {/* Hero Section */}
-      <div
-        className="text-white py-5 mb-5 text-center"
-        style={{
-          background: 'linear-gradient(to right, #6a11cb 0%, #2575fc 100%)',
-        }}
-      >
+      <div className={styles.heroSection}>
         <div className="container">
           <Title level={1} className="text-white mb-4">
             Оценивайте и обсуждайте детскую одежду вместе с нами
@@ -67,14 +91,11 @@ export const HomePage = () => {
           </Text>
           <Row justify="center">
             <Col xs={24} md={12} lg={10}>
-              <Input.Search
-                placeholder="Поиск товаров..."
-                enterButton="Найти"
-                size="large"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onSearch={() => console.log('Search:', searchQuery)}
-              />
+              <Button type="primary" size="large">
+                <Link to="/catalog" className="text-white text-decoration-none">
+                  Перейти в каталог
+                </Link>
+              </Button>
             </Col>
           </Row>
         </div>
@@ -88,13 +109,9 @@ export const HomePage = () => {
         <Row gutter={[16, 16]}>
           {categories.map((cat) => (
             <Col xs={12} sm={6} md={6} lg={3} key={cat.key}>
-              <Card
-                hoverable
-                className="text-center py-3"
-                style={{ borderRadius: '8px' }}
-              >
-                <div className="fs-3 mb-2">{cat.icon}</div>
-                <Text>{cat.label}</Text>
+              <Card hoverable className={styles.categoryCard}>
+                <div className={styles.categoryIcon}>{cat.icon}</div>
+                <Text className={styles.categoryText}>{cat.label}</Text>
               </Card>
             </Col>
           ))}
@@ -109,15 +126,17 @@ export const HomePage = () => {
         <Row gutter={[16, 16]} align="bottom">
           <Col xs={24} sm={12} md={6}>
             <Select
+              allowClear
               placeholder="Размер"
               style={{ width: '100%' }}
               size="large"
               onChange={(value) => handleFilterChange('size', value)}
-              options={sizes.map((s) => ({ value: s, label: s }))}
+              options={sizes}
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
+              allowClear
               placeholder="Возраст"
               style={{ width: '100%' }}
               size="large"
@@ -130,24 +149,27 @@ export const HomePage = () => {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
+              allowClear
               placeholder="Сезон"
               style={{ width: '100%' }}
               size="large"
               onChange={(value) => handleFilterChange('season', value)}
-              options={seasons.map((s) => ({ value: s, label: s }))}
+              options={seasons}
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
+              allowClear
               placeholder="Пол ребенка"
               style={{ width: '100%' }}
               size="large"
               onChange={(value) => handleFilterChange('gender', value)}
-              options={genders.map((g) => ({ value: g, label: g }))}
+              options={genders}
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Select
+              allowClear
               placeholder="Цена"
               style={{ width: '100%' }}
               size="large"
@@ -174,51 +196,56 @@ export const HomePage = () => {
         <Text type="secondary" className="d-block text-center mb-4">
           Товары с наивысшими оценками от наших пользователей
         </Text>
-        <Row gutter={[24, 24]}>
-          {featuredProducts.map((product) => (
-            <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
-              <Card
-                hoverable
-                cover={
-                  <img
-                    alt={product.title}
-                    src={product.image}
-                    style={{ height: 200, objectFit: 'cover' }}
-                  />
-                }
-              >
-                <Card.Meta
-                  title={product.title}
-                  description={
-                    <>
-                      <Text strong>{product.price} ₽</Text>
-                      <br />
-                      <Rate allowHalf disabled defaultValue={product.rating} />
-                      <Text type="secondary" className="ms-2">
-                        ({product.rating})
-                      </Text>
-                    </>
+        {featuredProducts.length === 0 ? (
+          <div className="text-center py-4">
+            <Text type="secondary">
+              На данный момент популярных товаров нет.
+            </Text>
+          </div>
+        ) : (
+          <Row gutter={[24, 24]}>
+            {featuredProducts.map((product: Product) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
+                <Card
+                  hoverable
+                  cover={
+                    <img
+                      alt={product.title}
+                      src={product.image}
+                      className={styles.productImage}
+                    />
                   }
-                />
-                <Button type="primary" block className="mt-3">
-                  <Link
-                    to={`/product/${product.id}`}
-                    className="text-white text-decoration-none"
-                  >
-                    Подробнее
-                  </Link>
-                </Button>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-        <div className="text-center mt-5">
-          <Button type="primary" size="large">
-            <Link to="/catalog" className="text-white text-decoration-none">
-              Перейти в каталог
-            </Link>
-          </Button>
-        </div>
+                >
+                  <Card.Meta
+                    title={product.title}
+                    description={
+                      <>
+                        <Text strong>{product.price} ₽</Text>
+                        <br />
+                        <Rate
+                          allowHalf
+                          disabled
+                          defaultValue={product.rating}
+                        />
+                        <Text type="secondary" className={styles.productRating}>
+                          ({product.rating})
+                        </Text>
+                      </>
+                    }
+                  />
+                  <Button type="primary" block className="mt-3">
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="text-white text-decoration-none"
+                    >
+                      Подробнее
+                    </Link>
+                  </Button>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
       </div>
     </div>
   );

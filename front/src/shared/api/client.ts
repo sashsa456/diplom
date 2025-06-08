@@ -69,7 +69,8 @@ export const endpoints = {
   },
   user: {
     profile: '/users/me',
-    uploadAvatar: '/users/me/avatar', 
+    uploadAvatar: '/users/me/avatar',
+    all: '/users',
   },
 
   products: {
@@ -77,7 +78,7 @@ export const endpoints = {
     details: (id: number) => `/products/${id}`,
     search: '/products/search',
     create: '/products',
-    myProducts: '/products/my',
+    myProducts: '/users/me/products',
   },
   reviews: {
     list: (productId: number) => `/products/${productId}/reviews`,
@@ -95,6 +96,7 @@ export const queryKeys = {
   },
   user: {
     profile: 'userProfile',
+    all: 'users',
   },
   products: {
     all: 'products',

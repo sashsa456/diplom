@@ -14,6 +14,8 @@ import {
   Spin,
   Tooltip,
   Upload,
+  InputNumber,
+  Select,
 } from 'antd';
 import { EditOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import {
@@ -22,30 +24,52 @@ import {
   useUpdateUser,
   Product as APIProductType,
   useUploadAvatar,
+  useUpdateProduct,
+  useResubmitProduct,
 } from '@/shared/api/hooks';
 import { useNavigate } from 'react-router-dom';
 import styles from './ProfilePage.module.css';
+import {
+  PRODUCT_CATEGORIES,
+  PRODUCT_SIZES,
+  PRODUCT_COLORS,
+  PRODUCT_MATERIALS,
+  PRODUCT_SEASONS,
+  PRODUCT_GENDERS,
+  PRODUCT_COUNTRIES,
+} from '@/shared/constants/product';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/api/client';
 
 const { Title, Text } = Typography;
+const { TextArea } = Input;
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const {
     data: userProfile,
     isLoading: isUserLoading,
     error: userError,
   } = useUserProfile();
   const { data: pendingProducts, isLoading: isPendingLoading } =
-    useMyProducts('pending');
+    useMyProducts();
   const { data: approvedProducts, isLoading: isApprovedLoading } =
-    useMyProducts('approved');
+    useMyProducts('accepted');
   const { data: rejectedProducts, isLoading: isRejectedLoading } =
     useMyProducts('rejected');
   const updateUserMutation = useUpdateUser();
+  const updateProductMutation = useUpdateProduct();
+  const resubmitProductMutation = useResubmitProduct();
 
   const [activeTab, setActiveTab] = useState('1');
   const [form] = Form.useForm();
+  const [productForm] = Form.useForm();
   const uploadAvatarMutation = useUploadAvatar();
+  const [editingProduct, setEditingProduct] = useState<APIProductType | null>(
+    null,
+  );
+  const [isFormChanged, setIsFormChanged] = useState(false);
 
   useEffect(() => {
     if (userProfile) {
@@ -56,21 +80,34 @@ export const ProfilePage = () => {
     }
   }, [userProfile, form]);
 
+  useEffect(() => {
+    if (editingProduct) {
+      productForm.setFieldsValue({
+        title: editingProduct.title,
+        description: editingProduct.description,
+        price: editingProduct.price,
+        category: editingProduct.category,
+        size: editingProduct.size,
+        colors: editingProduct.colors,
+        material: editingProduct.material,
+        season: editingProduct.season,
+        gender: editingProduct.gender,
+        countryMade: editingProduct.countryMade,
+      });
+      setIsFormChanged(false);
+    }
+  }, [editingProduct, productForm]);
 
-
-
-const handleAvatarChange = async (file: File) => {
-  try {
-    await uploadAvatarMutation.mutateAsync(file);
-    message.success('Аватар успешно обновлён');
-    
-  } catch (error) {
-    console.error(error);
-    message.error('Ошибка при загрузке аватара');
-  }
-};
-
-
+  const handleAvatarChange = async (file: File) => {
+    try {
+      await uploadAvatarMutation.mutateAsync(file);
+      queryClient.invalidateQueries({ queryKey: [queryKeys.user.profile] });
+      message.success('Аватар успешно обновлён');
+    } catch (error) {
+      console.error(error);
+      message.error('Ошибка при загрузке аватара');
+    }
+  };
 
   const handleUpdateProfile = async (values: any) => {
     try {
@@ -86,9 +123,71 @@ const handleAvatarChange = async (file: File) => {
     navigate('/create-product');
   };
 
+  const handleEditProduct = (product: APIProductType) => {
+    setEditingProduct(product);
+  };
+
+  const handleProductUpdate = async (values: any) => {
+    if (!editingProduct) return;
+
+    try {
+      const updatedProduct = await updateProductMutation.mutateAsync({
+        productId: editingProduct.id,
+        data: values,
+      });
+      message.success('Товар успешно обновлен');
+      setEditingProduct(updatedProduct);
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products.myProducts],
+      });
+      queryClient.invalidateQueries({ queryKey: [queryKeys.products.all] });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products.myProducts('pending')],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products.myProducts('accepted')],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products.myProducts('rejected')],
+      });
+      setIsFormChanged(false);
+    } catch (error) {
+      message.error('Ошибка при обновлении товара');
+      console.error('Update product error:', error);
+    }
+  };
+
+  const handleResubmitProduct = async () => {
+    if (!editingProduct) return;
+
+    try {
+      await resubmitProductMutation.mutateAsync({
+        productId: editingProduct.id,
+      });
+      message.success('Товар отправлен на повторную проверку');
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products.myProducts],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products.myProducts('pending')],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products.myProducts('accepted')],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.products.myProducts('rejected')],
+      });
+      setEditingProduct(null);
+    } catch (error) {
+      message.error('Ошибка при отправке товара на проверку');
+      console.error('Resubmit product error:', error);
+    }
+  };
+
   const renderProducts = (
     products: APIProductType[] | undefined,
     isLoading: boolean,
+    isRejected: boolean = false,
   ) => {
     if (isLoading) {
       return (
@@ -98,7 +197,6 @@ const handleAvatarChange = async (file: File) => {
         </div>
       );
     }
-
     if (!products || products.length === 0) {
       return (
         <div className="text-center py-5">
@@ -121,6 +219,19 @@ const handleAvatarChange = async (file: File) => {
               />
             }
             className={styles.productCard}
+            actions={
+              isRejected
+                ? [
+                    <Button
+                      key="edit"
+                      type="primary"
+                      onClick={() => handleEditProduct(product)}
+                    >
+                      Редактировать
+                    </Button>,
+                  ]
+                : undefined
+            }
           >
             <Title level={5} className={styles.productTitle}>
               {product.title}
@@ -173,13 +284,9 @@ const handleAvatarChange = async (file: File) => {
     {
       key: '3',
       label: 'Отклоненные',
-      children: renderProducts(rejectedProducts, isRejectedLoading),
+      children: renderProducts(rejectedProducts, isRejectedLoading, true),
     },
   ];
-
-
-  
-
 
   return (
     <div className={styles.container}>
@@ -187,22 +294,22 @@ const handleAvatarChange = async (file: File) => {
         <Card className={styles.profileCard}>
           <div className={styles.profileHeader}>
             <Tooltip title="Нажмите, чтобы изменить аватар">
-  <Upload
-    showUploadList={false}
-    beforeUpload={(file) => {
-      handleAvatarChange(file);
-      return false; 
-    }}
-  >
-    <Avatar
-      size={80}
-      icon={ <UserOutlined />}
-      src={`http://localhost:3001/api${userProfile.avatar}`}
-      className={styles.avatar}
-      style={{ cursor: 'pointer' }}
-    />
-  </Upload>
-</Tooltip>
+              <Upload
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  handleAvatarChange(file);
+                  return false;
+                }}
+              >
+                <Avatar
+                  size={80}
+                  icon={<UserOutlined />}
+                  src={`http://localhost:3001/api${userProfile.avatar}`}
+                  className={styles.avatar}
+                  style={{ cursor: 'pointer' }}
+                />
+              </Upload>
+            </Tooltip>
 
             <Text strong>{userProfile.username}</Text>
             <Text type="secondary" className={styles.emailText}>
@@ -223,7 +330,13 @@ const handleAvatarChange = async (file: File) => {
 
           <div className={styles.roleTagWrapper}>
             <Tag color={userProfile.isAdmin ? 'purple' : 'blue'}>
-              {userProfile.isAdmin ? 'Администратор' : 'Пользователь'}
+              {userProfile.isAdmin ? (
+                <span role="button" onClick={() => navigate('/admin')}>
+                  Администратор
+                </span>
+              ) : (
+                'Пользователь'
+              )}
             </Tag>
           </div>
 
@@ -236,9 +349,6 @@ const handleAvatarChange = async (file: File) => {
                 <Input />
               </Form.Item>
               <Form.Item label="Новый пароль" name="password">
-                <Input.Password />
-              </Form.Item>
-              <Form.Item label="Старый пароль" name="oldPassword">
                 <Input.Password />
               </Form.Item>
               <Form.Item>
@@ -258,27 +368,135 @@ const handleAvatarChange = async (file: File) => {
       </div>
 
       <div className={styles.content}>
-        <Card
-          title={
-            <Space>
-              <Text strong style={{ fontSize: 18 }}>
-                Мои товары
-              </Text>
-            </Space>
-          }
-          extra={
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddProductClick}
+        {editingProduct ? (
+          <Card
+            title="Редактирование товара"
+            extra={
+              <Space>
+                <Button onClick={() => setEditingProduct(null)}>Отмена</Button>
+                <Button
+                  type="primary"
+                  onClick={() => productForm.submit()}
+                  loading={updateProductMutation.isPending}
+                >
+                  Сохранить изменения
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleResubmitProduct}
+                  disabled={!isFormChanged}
+                  loading={resubmitProductMutation.isPending}
+                >
+                  Отправить на проверку
+                </Button>
+              </Space>
+            }
+          >
+            <Form
+              form={productForm}
+              layout="vertical"
+              onFinish={handleProductUpdate}
+              onValuesChange={() => setIsFormChanged(true)}
             >
-              Добавить товар
-            </Button>
-          }
-          className={styles.productsCard}
-        >
-          <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
-        </Card>
+              <Form.Item
+                label="Название"
+                name="title"
+                rules={[{ required: true, message: 'Введите название товара' }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Описание"
+                name="description"
+                rules={[{ required: true, message: 'Введите описание товара' }]}
+              >
+                <TextArea rows={4} />
+              </Form.Item>
+              <Form.Item
+                label="Цена"
+                name="price"
+                rules={[{ required: true, message: 'Введите цену товара' }]}
+              >
+                <InputNumber min={0} prefix="₽" style={{ width: '100%' }} />
+              </Form.Item>
+              <Form.Item
+                label="Категория"
+                name="category"
+                rules={[{ required: true, message: 'Выберите категорию' }]}
+              >
+                <Select options={PRODUCT_CATEGORIES} />
+              </Form.Item>
+              <Form.Item
+                label="Размер"
+                name="size"
+                rules={[{ required: true, message: 'Выберите размер' }]}
+              >
+                <Select options={PRODUCT_SIZES} />
+              </Form.Item>
+              <Form.Item
+                label="Цвета"
+                name="colors"
+                rules={[{ required: true, message: 'Выберите цвета' }]}
+              >
+                <Select
+                  mode="multiple"
+                  options={PRODUCT_COLORS}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+              <Form.Item
+                label="Материал"
+                name="material"
+                rules={[{ required: true, message: 'Выберите материал' }]}
+              >
+                <Select options={PRODUCT_MATERIALS} />
+              </Form.Item>
+              <Form.Item
+                label="Сезон"
+                name="season"
+                rules={[{ required: true, message: 'Выберите сезон' }]}
+              >
+                <Select options={PRODUCT_SEASONS} />
+              </Form.Item>
+              <Form.Item
+                label="Пол"
+                name="gender"
+                rules={[{ required: true, message: 'Выберите пол' }]}
+              >
+                <Select options={PRODUCT_GENDERS} />
+              </Form.Item>
+              <Form.Item
+                label="Страна производства"
+                name="countryMade"
+                rules={[{ required: true, message: 'Выберите страну' }]}
+              >
+                <Select options={PRODUCT_COUNTRIES} />
+              </Form.Item>
+            </Form>
+          </Card>
+        ) : (
+          <Card
+            title={
+              <Space>
+                <Text strong style={{ fontSize: 18 }}>
+                  Мои товары
+                </Text>
+              </Space>
+            }
+            extra={
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAddProductClick}
+              >
+                Добавить товар
+              </Button>
+            }
+            className={styles.productsCard}
+          >
+            <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
+          </Card>
+        )}
       </div>
     </div>
   );
