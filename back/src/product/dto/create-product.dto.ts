@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNumber, IsString, Length, Min } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsEnum, IsString, Length, Min } from "class-validator";
 import {
   Category,
   Color,
@@ -24,8 +25,8 @@ export class CreateProductDto {
   @ApiProperty()
   description: string;
 
-  @IsNumber()
   @Min(1)
+  @Transform(({ value }) => Number(value))
   @ApiProperty()
   price: number;
 
@@ -58,4 +59,7 @@ export class CreateProductDto {
   @IsEnum(CountryMade)
   @ApiProperty()
   countryMade: CountryMade;
+
+  imageName: string;
+  userId: number;
 }

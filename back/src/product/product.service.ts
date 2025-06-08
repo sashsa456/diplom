@@ -13,11 +13,12 @@ export class ProductService {
     private readonly repo: Repository<ProductEntity>
   ) {}
 
-  async create(createProductDto: CreateProductDto & { userId: number }) {
-    const { userId, ...productDto } = createProductDto;
+  async create(createProductDto: CreateProductDto) {
+    const { userId, imageName, ...productDto } = createProductDto;
 
     return this.repo.save({
       ...productDto,
+      image: "/uploads/" + imageName,
       user: { id: userId }
     });
   }

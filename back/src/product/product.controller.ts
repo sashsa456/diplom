@@ -1,3 +1,5 @@
+import { mimeTypeFilter } from "@/common";
+import { imagePattern } from "@/common/utils/mimeTypeFilter";
 import { CreateReviewDto } from "@/review/dto/create-review.dto";
 import { UpdateReviewDto } from "@/review/dto/update-review.dto";
 import { ReviewService } from "@/review/review.service";
@@ -13,9 +15,14 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiTags } from "@nestjs/swagger";
+import { diskStorage } from "multer";
+import { extname, join } from "path";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { UpdateStatusDto } from "./dto/update-status.dto";
@@ -37,13 +44,36 @@ export class ProductController {
     private readonly reviewService: ReviewService
   ) {}
 
+  @UseInterceptors(
+    FileInterceptor("image", {
+      fileFilter: mimeTypeFilter(imagePattern),
+      limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB
+      },
+      preservePath: true,
+      storage: diskStorage({
+        destination: join(__dirname, "..", "..", "uploads"),
+        filename: (_req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+          const ext = extname(file.originalname);
+          const filename = `${file.originalname.replace(ext, "")}-${uniqueSuffix}${ext}`;
+
+          cb(null, filename);
+        }
+      })
+    })
+  )
   @Post()
   create(
+    @UploadedFile() image: Express.Multer.File,
     @Body() createProductDto: CreateProductDto,
     @UserMe("id") userId: number
   ) {
     return this.productService.create({
       ...createProductDto,
+      imageName: image.filename,
       userId
     });
   }
@@ -78,6 +108,7 @@ export class ProductController {
   @Patch(":id")
   @UseGuards(ProductGuard)
   update(
+    @UploadedFile("image") image: Express.Multer.File,
     @Param("id", ParseIntPipe) id: number,
     @Body() updateProductDto: UpdateProductDto
   ) {
