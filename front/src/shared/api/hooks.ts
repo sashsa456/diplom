@@ -102,6 +102,7 @@ export interface User {
   username: string;
   accessToken: string;
   refreshToken: string;
+  avatar: string;
 }
 
 export interface Feedback {
@@ -117,6 +118,14 @@ export interface AppInfo {
   name: string;
   contactEmail: string;
   contactPhone: string;
+}
+
+export interface ProductSearch {
+  size: string,
+  age: string,
+  season: string,
+  gender: string,
+  price: string,
 }
 
 export const useAppInfo = () => {

@@ -27,6 +27,7 @@ import {
   useReviews,
   useCreateReview,
   Product,
+  User,
 } from '@/shared/api/hooks';
 
 const { Title, Text, Paragraph } = Typography;
@@ -34,9 +35,9 @@ const { TextArea } = Input;
 
 interface Review {
   id: number;
-  author: string;
+  user: User;
   rating: number;
-  date: string;
+  createdAt: string;
   text: string;
 }
 
@@ -155,13 +156,13 @@ export const ProductPage = () => {
               {reviews?.map((review: Review) => (
                 <Card key={review.id}>
                   <Space align="start">
-                    <Avatar>{review.author[0]}</Avatar>
+                    <Avatar src={`http://localhost:3001/api${review.user.avatar}`}></Avatar>
                     <div>
-                      <Text strong>{review.author}</Text>
+                      <Text strong>{review.user.username}</Text>
                       <div>
                         <Rate disabled defaultValue={review.rating} />
                         <Text type="secondary" className="ms-2">
-                          {review.date}
+                          {review.createdAt}
                         </Text>
                       </div>
                       <Paragraph className="mt-2">{review.text}</Paragraph>

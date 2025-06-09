@@ -145,6 +145,17 @@ export class ProductController {
 
   /* Reviews */
 
+  @Get(":id/reviews")
+  async findReviews(@Param("id", ParseIntPipe) productId: number) {
+    return this.reviewService.findAll({
+      where: {
+        product: {
+          id: productId
+        }
+      }
+    });
+  }
+
   @Post(":id/reviews")
   async createReview(
     @Param("id", ParseIntPipe) productId: number,
