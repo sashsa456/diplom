@@ -1,7 +1,14 @@
+import { CommentEntity } from "@/comment/entities/comment.entity";
 import { TimestampEntity } from "@/common";
 import { ProductEntity } from "@/product/entities/product.entity";
 import { UserEntity } from "@/user/entities/user.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn
+} from "typeorm";
 
 @Entity("reviews")
 export class ReviewEntity extends TimestampEntity {
@@ -14,6 +21,7 @@ export class ReviewEntity extends TimestampEntity {
   @Column()
   rating: number;
 
+  /* Relations */
   @ManyToOne(() => ProductEntity, product => product.reviews, {
     createForeignKeyConstraints: false
   })
@@ -23,4 +31,9 @@ export class ReviewEntity extends TimestampEntity {
     eager: true
   })
   user: UserEntity;
+
+  @OneToMany(() => CommentEntity, comment => comment.review, {
+    eager: true
+  })
+  comments: CommentEntity[];
 }

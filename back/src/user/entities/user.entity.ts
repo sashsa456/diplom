@@ -1,3 +1,4 @@
+import { CommentEntity } from "@/comment/entities/comment.entity";
 import { TimestampEntity } from "@/common";
 import { ProductEntity } from "@/product/entities/product.entity";
 import { ReviewEntity } from "@/review/entities/review.entity";
@@ -50,4 +51,7 @@ export class UserEntity extends TimestampEntity {
 
   @OneToMany(() => ReviewEntity, review => review.user)
   reviews: ReviewEntity[];
+
+  @OneToMany(() => CommentEntity, comment => comment.user)
+  comments: CommentEntity[];
 }

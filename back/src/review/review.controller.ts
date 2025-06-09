@@ -1,9 +1,19 @@
-import { Controller } from "@nestjs/common";
-import { ReviewService } from "./review.service";
+import { CommentGuard } from "@/comment/comment.guard";
+import { CommentService } from "@/comment/comment.service";
+import { CreateCommentDto } from "@/comment/dto/create-comment.dto";
+import { UserMe } from "@/user/user-me.decorator";
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  UseGuards
+} from "@nestjs/common";
 
 @Controller("reviews")
 export class ReviewController {
-  constructor(private readonly reviewService: ReviewService) {}
+  constructor(private readonly commentService: CommentService) {}
 
   // @Post()
   // create(@Body() createReviewDto: CreateReviewDto) {
@@ -31,4 +41,41 @@ export class ReviewController {
   // remove(@Param("id") id: number) {
   //   return this.reviewService.remove(id);
   // }
+
+  /* Comments */
+
+  @Post(":id/comments")
+  createComment(
+    @Param("id") id: number,
+    @UserMe("id") userId: number,
+    @Body() createCommentDto: CreateCommentDto
+  ) {
+    return this.commentService.create({
+      ...createCommentDto,
+      reviewId: id,
+      userId
+    });
+  }
+
+  // @Patch(":id/comments/:commentId")
+  // updateComment(
+  //   @Param("id") id: number,
+  //   @Param("commentId") commentId: number,
+  //   @UserMe("id") userId: number,
+  //   @Body() updateCommentDto: CreateCommentDto
+  // ) {
+  //   return this.commentService.update(commentId, {
+  //     ...updateCommentDto,
+  //     userId
+  //   });
+  // }
+
+  @Delete(":id/comments/:commentId")
+  @UseGuards(CommentGuard)
+  removeComment(
+    @Param("id") id: number,
+    @Param("commentId") commentId: number
+  ) {
+    return this.commentService.remove(commentId);
+  }
 }

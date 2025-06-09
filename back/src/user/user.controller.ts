@@ -36,7 +36,7 @@ export class UserController {
   // }
 
   @Get()
-  @UseGuards(new AdminGuard())
+  @UseGuards(AdminGuard)
   findAll() {
     return this.userService.findAll();
   }
@@ -46,16 +46,17 @@ export class UserController {
   //   return this.userService.findOne({ id });
   // }
 
-  // @Patch(":id")
-  // update(
-  //   @Param("id", ParseIntPipe) id: number,
-  //   @Body() updateUserDto: UpdateUserDto
-  // ) {
-  //   return this.userService.update(id, updateUserDto);
-  // }
+  @UseGuards(AdminGuard)
+  @Patch(":id")
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
+    return this.userService.update(id, updateUserDto);
+  }
 
   @Delete(":id")
-  @UseGuards(new AdminGuard())
+  @UseGuards(AdminGuard)
   remove(@Param("id", ParseIntPipe) id: number, @UserMe("id") userId: number) {
     if (id === userId) {
       throw new BadRequestException("Cannot delete yourself");

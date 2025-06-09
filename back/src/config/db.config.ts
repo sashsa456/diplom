@@ -1,4 +1,5 @@
 import { AppEntity } from "@/app/entities/app.entity";
+import { CommentEntity } from "@/comment/entities/comment.entity";
 import { FeedbackEntity } from "@/feedback/entities/feedback.entity";
 import { ProductEntity } from "@/product/entities/product.entity";
 import { ReviewEntity } from "@/review/entities/review.entity";
@@ -22,6 +23,7 @@ const dbConfig = registerAs(
       ProductEntity,
       ReviewEntity,
       FeedbackEntity,
+      CommentEntity,
       AppEntity
     ],
     migrations: ["src/migrations/*.ts"],
