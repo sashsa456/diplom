@@ -4,13 +4,13 @@ export interface Product {
   image: string;
   price: number;
   category: string;
-  size: string[];
-  color: string;
+  size: string;
+  colors: string[];
   material: string;
   season: string;
   rating: number;
   gender: string;
-  country: string;
+  countryMade: string;
   description?: string;
   characteristics?: Record<string, string>;
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   Tabs,
@@ -37,16 +37,26 @@ export const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('1');
   const queryClient = useQueryClient();
 
-  const [form] = Form.useForm<AppInfo>();
-
   const { data: products, isLoading: isProductsLoading } = useProducts();
   const { data: users, isLoading: isUsersLoading } = useUsers();
   const { data: feedbacks, isLoading: isFeedbacksLoading } = useFeedbacks();
-  const { data: appInfo, isLoading: isAppInfoLoading } = useAppInfo();
+  const { data: appInfo } = useAppInfo();
   const updateProductStatusMutation = useUpdateProductStatus();
   const updateUserAdminStatusMutation = useUpdateUserAdminStatus();
   const deleteFeedbackMutation = useDeleteFeedback();
   const updateAppInfoMutation = useAppInfoUpdate();
+
+  const [form] = Form.useForm<AppInfo>();
+
+  useEffect(() => {
+    if (appInfo) {
+      form.setFieldsValue({
+        name: appInfo.name,
+        contactEmail: appInfo.contactEmail,
+        contactPhone: appInfo.contactPhone,
+      });
+    }
+  }, [appInfo, form]);
 
   const pendingProducts =
     products?.filter((product: Product) => product.status === 'pending') || [];
@@ -55,7 +65,6 @@ export const AdminPage = () => {
     try {
       await deleteFeedbackMutation.mutateAsync(feedbackId);
       message.success('Отзыв успешно удален');
-      // Invalidate and refetch feedbacks to update the table
       queryClient.invalidateQueries({ queryKey: [queryKeys.feedbacks.all] });
     } catch (error) {
       message.error('Ошибка при удалении отзыва');
@@ -66,9 +75,10 @@ export const AdminPage = () => {
   const handleAppInfoUpdate = async (values: AppInfo) => {
     try {
       await updateAppInfoMutation.mutateAsync(values);
-      message.success('Информация обновлена');
+      message.success('Настройки сайта успешно обновлены!');
+      queryClient.invalidateQueries({ queryKey: [queryKeys.app.all] });
     } catch (error) {
-      message.error('Ошибка при обновлении информации');
+      message.error('Ошибка при сохранении настроек сайта.');
       console.error('Update app info error:', error);
     }
   };
@@ -85,7 +95,6 @@ export const AdminPage = () => {
       message.success(
         `Товар ${newStatus === 'accepted' ? 'одобрен' : 'отклонен'}`,
       );
-      // Invalidate and refetch products to update the table
       queryClient.invalidateQueries({ queryKey: [queryKeys.products.all] });
     } catch (error) {
       message.error('Ошибка при обновлении статуса товара');
@@ -99,7 +108,6 @@ export const AdminPage = () => {
       message.success(
         `Пользователь ${isAdmin ? 'назначен' : 'снят с'} администратором`,
       );
-      // Invalidate and refetch users to update the table
       queryClient.invalidateQueries({ queryKey: [queryKeys.user.all] });
     } catch (error) {
       message.error('Ошибка при обновлении статуса администратора');
@@ -152,7 +160,6 @@ export const AdminPage = () => {
     },
   ];
 
-  // Колонки для таблицы feedback
   const feedbackColumns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: 'Имя', dataIndex: 'name', key: 'name' },
@@ -297,14 +304,14 @@ export const AdminPage = () => {
                           <Input />
                       </Form.Item>
                       <Form.Item
-                          name={"contactEmail"}
+                          name="contactEmail"
                           label="Электронная почта"
                           initialValue={appInfo?.contactEmail}
                       >
                           <Input />
                       </Form.Item>
                       <Form.Item
-                          name={"contactPhone"}
+                          name="contactPhone"
                           label="Телефон"
                           initialValue={appInfo?.contactPhone}
                       >

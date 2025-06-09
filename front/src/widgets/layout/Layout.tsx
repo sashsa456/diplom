@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
-import { Layout as AntLayout, Menu, Button, Space } from 'antd';
+import { Layout as AntLayout, Menu, Button, Space, Spin } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import { UserOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/shared/hooks';
 import { menuItems } from './constants';
+import { useAppInfo } from '@/shared/api/hooks';
 
 const { Header, Content, Footer } = AntLayout;
 
@@ -14,19 +15,26 @@ interface LayoutProps {
 export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const { user, logout } = useAuthStore();
-
+  const { data: appInfo, isLoading: isAppInfoLoading } = useAppInfo();
   const isAuthenticated = !!user;
 
   const handleLogout = () => {
     logout();
   };
+  if (isAppInfoLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spin fullscreen size="large" tip="Загрузка..." />
+      </div>
+    );
+  }
 
   return (
     <AntLayout className="min-vh-100">
       <Header className="d-flex align-items-center justify-content-between px-4">
         <div className="d-flex align-items-center">
           <Link to="/" className="text-white text-decoration-none">
-            <h3 className="mb-0">KidsFashion</h3>
+            <h3 className="mb-0"> {appInfo?.name || 'KidsFashion'}</h3>
           </Link>
           <Menu
             theme="dark"

@@ -82,6 +82,8 @@ export const endpoints = {
   reviews: {
     list: (productId: number) => `/products/${productId}/reviews`,
     create: (productId: number) => `/products/${productId}/reviews`,
+    delete: (productId: number, reviewId: number) =>
+      `/products/${productId}/reviews/${reviewId}`,
   },
   feedbacks: {
     create: '/feedbacks',
@@ -90,7 +92,7 @@ export const endpoints = {
   },
   app: {
     all: '/app',
-  }
+  },
 };
 
 export const queryKeys = {
@@ -114,6 +116,6 @@ export const queryKeys = {
     all: 'feedbacks',
   },
   app: {
-    all: "app",
-  }
+    all: 'app',
+  },
 };

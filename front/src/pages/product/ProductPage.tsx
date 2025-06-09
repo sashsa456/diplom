@@ -12,6 +12,7 @@ import {
   Space,
   message,
   Spin,
+  Modal,
 } from 'antd';
 import {
   FacebookShareButton,
@@ -26,9 +27,14 @@ import {
   useProduct,
   useReviews,
   useCreateReview,
+  useDeleteReview,
   Product,
   User,
 } from '@/shared/api/hooks';
+import { useAuthStore } from '@/shared/hooks';
+import { DeleteOutlined, MessageOutlined } from '@ant-design/icons';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/api/client';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -57,6 +63,8 @@ export const ProductPage = () => {
     rating: 0,
     text: '',
   });
+  const currentUser = useAuthStore((state) => state.user);
+  const queryClient = useQueryClient();
 
   const {
     data: product,
@@ -65,7 +73,8 @@ export const ProductPage = () => {
   } = useProduct(Number(id));
   const { data: reviews, isLoading: isReviewsLoading } = useReviews(Number(id));
   const createReview = useCreateReview(Number(id));
-  console.log(product);
+  const deleteReview = useDeleteReview(Number(id));
+
   const handleReviewSubmit = async () => {
     if (!newReview.rating || !newReview.text) {
       message.error('Пожалуйста, заполните все поля');
@@ -78,6 +87,18 @@ export const ProductPage = () => {
       setNewReview({ rating: 0, text: '' });
     } catch (error) {
       message.error('Ошибка при добавлении отзыва');
+    }
+  };
+
+  const handleReviewDelete = async (reviewId: number) => {
+    try {
+      await deleteReview.mutateAsync(reviewId);
+      message.success('Отзыв успешно удален');
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.reviews.list(Number(id)),
+      });
+    } catch (error) {
+      message.error('Ошибка при удалении отзыва');
     }
   };
 
@@ -156,9 +177,48 @@ export const ProductPage = () => {
               {reviews?.map((review: Review) => (
                 <Card key={review.id}>
                   <Space align="start">
-                    <Avatar src={`http://localhost:3001/api${review.user.avatar}`}></Avatar>
-                    <div>
-                      <Text strong>{review.user.username}</Text>
+                    <Avatar
+                      src={`http://localhost:3001/api${review.user.avatar}`}
+                    ></Avatar>
+                    <div style={{ flex: 1 }}>
+                      <Space
+                        style={{
+                          width: '100%',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <Text strong>{review.user.username}</Text>
+                        <Space>
+                          <Button
+                            type="text"
+                            icon={<MessageOutlined />}
+                            onClick={() => {
+                              // TODO: Implement reply functionality
+                              message.info(
+                                'Функционал ответа на отзыв будет добавлен позже',
+                              );
+                            }}
+                          />
+                          {currentUser?.id === review.user.id && (
+                            <Button
+                              type="text"
+                              danger
+                              icon={<DeleteOutlined />}
+                              onClick={() => {
+                                Modal.confirm({
+                                  title: 'Удалить отзыв?',
+                                  content:
+                                    'Вы уверены, что хотите удалить этот отзыв?',
+                                  okText: 'Да',
+                                  cancelText: 'Нет',
+                                  onOk: () => handleReviewDelete(review.id),
+                                });
+                              }}
+                              loading={deleteReview.isPending}
+                            />
+                          )}
+                        </Space>
+                      </Space>
                       <div>
                         <Rate disabled defaultValue={review.rating} />
                         <Text type="secondary" className="ms-2">

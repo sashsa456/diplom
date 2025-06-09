@@ -14,9 +14,9 @@ import {
 } from 'antd';
 import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { Product, Filters } from '../../types/catalog';
+import { Filters } from '../../types/catalog';
+import { Product } from '@/shared/api/hooks';
 import { FilterSection } from './components/FilterSection';
-import { useFilteredProducts } from './hooks/useFilteredProducts';
 import { usePagination } from './hooks/usePagination';
 import {
   categories,
@@ -37,7 +37,7 @@ const initialFilters: Filters = {
   color: [],
   material: [],
   season: [],
-  priceRange: [0, 10000],
+  priceRange: [0, 1000000],
   rating: 0,
   gender: [],
   country: [],
@@ -48,7 +48,14 @@ export const CatalogPage = () => {
   const [isFilterDrawerVisible, setIsFilterDrawerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: products, isLoading, isError, error } = useProducts();
+  const {
+    data: products,
+    isLoading,
+    isError,
+    error,
+  } = useProducts({
+    status: 'accepted',
+  });
 
   const handleFilterChange = (
     filterType: keyof Filters,
@@ -60,11 +67,8 @@ export const CatalogPage = () => {
     }));
   };
 
-  const filteredProducts = useFilteredProducts(
-    products || [],
-    filters,
-    searchQuery,
-  );
+  const filteredProducts: Product[] = products || []; // Явно указываем тип Product[]
+
   const { currentPage, setCurrentPage, getPaginatedItems, getTotalPages } =
     usePagination(16);
 
@@ -113,7 +117,7 @@ export const CatalogPage = () => {
 
       <Row gutter={[24, 24]}>
         {paginatedProducts.length > 0 ? (
-          paginatedProducts.map((product: Product) => (
+          paginatedProducts.map((product) => (
             <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
               <Card
                 hoverable
@@ -186,7 +190,7 @@ export const CatalogPage = () => {
               handleFilterChange('priceRange', value as [number, number])
             }
             min={0}
-            max={10000}
+            max={1000000}
             step={100}
           />
           <Text>

@@ -1,4 +1,5 @@
-import { Product, Filters } from '@/types/catalog';
+import { Filters } from '@/types/catalog';
+import { Product } from '@/shared/api/hooks';
 
 export const useFilteredProducts = (
   products: Product[],
@@ -15,11 +16,12 @@ export const useFilteredProducts = (
       filters.category.includes(product.category);
 
     const matchesSize =
-      filters.size.length === 0 ||
-      product.size.some((s: string) => filters.size.includes(s));
+      filters.size.length === 0 || filters.size.includes(product.size);
 
     const matchesColor =
-      filters.color.length === 0 || filters.color.includes(product.color);
+      filters.color.length === 0 ||
+      (Array.isArray(product.colors) &&
+        product.colors.some((color) => filters.color.includes(color)));
 
     const matchesMaterial =
       filters.material.length === 0 ||
@@ -39,7 +41,8 @@ export const useFilteredProducts = (
       filters.gender.length === 0 || filters.gender.includes(product.gender);
 
     const matchesCountry =
-      filters.country.length === 0 || filters.country.includes(product.country);
+      filters.country.length === 0 ||
+      filters.country.includes(product.countryMade);
 
     return (
       matchesSearch &&

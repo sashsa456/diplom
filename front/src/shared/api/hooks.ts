@@ -1,9 +1,6 @@
-// TODO: Разнести по компонентам, убрать отсюда
-
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient, endpoints, queryKeys } from './client';
 import { useAuthStore } from '../hooks';
-import { RcFile } from 'antd/es/upload';
 
 export const useLogin = () => {
   const setUser = useAuthStore((state) => state.setUser);
@@ -121,11 +118,11 @@ export interface AppInfo {
 }
 
 export interface ProductSearch {
-  size: string,
-  age: string,
-  season: string,
-  gender: string,
-  price: string,
+  size: string;
+  age: string;
+  season: string;
+  gender: string;
+  price: string;
 }
 
 export const useAppInfo = () => {
@@ -145,7 +142,7 @@ export const useAppInfoUpdate = () => {
       return data;
     },
   });
-}
+};
 
 export const useMyProducts = (status?: 'pending' | 'accepted' | 'rejected') => {
   return useQuery<Product[]>({
@@ -154,7 +151,8 @@ export const useMyProducts = (status?: 'pending' | 'accepted' | 'rejected') => {
       const { data } = await apiClient.get(endpoints.products.myProducts, {
         params: { status },
       });
-      return data.products.filter((product: Product) =>
+      const productsArray = data.products || [];
+      return productsArray.filter((product: Product) =>
         status ? product.status === status : true,
       );
     },
@@ -171,7 +169,7 @@ export const useCreateProduct = () => {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-        }
+        },
       );
       return data;
     },
@@ -196,6 +194,7 @@ export const useUpdateUser = () => {
 export const useProducts = (params?: {
   category?: string;
   search?: string;
+  status?: 'pending' | 'accepted' | 'rejected';
 }) => {
   return useQuery({
     queryKey: [queryKeys.products.all, params],
@@ -238,6 +237,16 @@ export const useCreateReview = (productId: number) => {
   });
 };
 
+export const useDeleteReview = (productId: number) => {
+  return useMutation({
+    mutationFn: async (reviewId: number) => {
+      const { data } = await apiClient.delete(
+        endpoints.reviews.delete(productId, reviewId),
+      );
+      return data;
+    },
+  });
+};
 
 export const useSendFeedback = () => {
   return useMutation({
@@ -363,4 +372,3 @@ export const useResubmitProduct = () => {
     },
   });
 };
-
