@@ -6,7 +6,8 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
+  VirtualColumn
 } from "typeorm";
 import {
   Category,
@@ -71,8 +72,16 @@ export class ProductEntity extends TimestampEntity {
   })
   season: Season;
 
-  // @Column()
-  // rating: number;
+  @VirtualColumn({
+    query: alias =>
+      `SELECT AVG(rating) FROM reviews WHERE reviews."productId" = ${alias}.id`,
+    type: "float",
+    transformer: {
+      from: value => Number(value || 0),
+      to: value => value
+    }
+  })
+  rating: number;
 
   @Column({
     type: "enum",
