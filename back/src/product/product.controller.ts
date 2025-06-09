@@ -87,7 +87,6 @@ export class ProductController {
     });
   }
 
-  @UseGuards(AdminGuard)
   @Get()
   findAll(@Query("status") status: ProductStatus) {
     return this.productService.findAll({

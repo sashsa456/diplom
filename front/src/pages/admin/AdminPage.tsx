@@ -13,6 +13,7 @@ import {
   message,
   Spin,
   Modal,
+  Switch,
 } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import {
@@ -27,6 +28,8 @@ import {
   useAppInfo,
   useAppInfoUpdate,
   AppInfo,
+  useDeleteUser,
+  useUpdateUserActiveStatus,
 } from '@/shared/api/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/client';
@@ -43,6 +46,8 @@ export const AdminPage = () => {
   const { data: appInfo } = useAppInfo();
   const updateProductStatusMutation = useUpdateProductStatus();
   const updateUserAdminStatusMutation = useUpdateUserAdminStatus();
+  const updateUserActiveStatusMutation = useUpdateUserActiveStatus();
+  const deleteUserMutation = useDeleteUser();
   const deleteFeedbackMutation = useDeleteFeedback();
   const updateAppInfoMutation = useAppInfoUpdate();
 
@@ -60,6 +65,18 @@ export const AdminPage = () => {
 
   const pendingProducts =
     products?.filter((product: Product) => product.status === 'pending') || [];
+
+  const handleUserDelete = async (userId: number) => {
+    try {
+      await deleteUserMutation.mutateAsync({userId});
+      message.success('Пользователь успешно удален');
+      queryClient.invalidateQueries({ queryKey: [queryKeys.user.all] });
+    } catch (error) {
+      message.error('Ошибка при удалении пользователя');
+      console.error('Delete user error:', error);
+    }
+  };
+
 
   const handleFeedbackDelete = async (feedbackId: number) => {
     try {
@@ -106,7 +123,7 @@ export const AdminPage = () => {
     try {
       await updateUserAdminStatusMutation.mutateAsync({ userId, isAdmin });
       message.success(
-        `Пользователь ${isAdmin ? 'назначен' : 'снят с'} администратором`,
+        `Пользователь назначен администратором`,
       );
       queryClient.invalidateQueries({ queryKey: [queryKeys.user.all] });
     } catch (error) {
@@ -115,16 +132,52 @@ export const AdminPage = () => {
     }
   };
 
+  const handleUserActiveStatusUpdate = async (userId: number, isActive: boolean) => {
+    try {
+      await updateUserActiveStatusMutation.mutateAsync({ userId, isActive });
+      message.success(
+        `Пользователь ${isActive ? 'активирован' : 'заблокирован'}`,
+      );
+      queryClient.invalidateQueries({ queryKey: [queryKeys.user.all] });
+    } catch (error) {
+      message.error('Ошибка при обновлении статуса пользователя');
+      console.error('Update user status error:', error);
+    }
+  };
+
   const usersColumns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: 'Имя', dataIndex: 'username', key: 'username' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
     {
-      title: 'Статус',
+      title: 'Роль',
       dataIndex: 'isAdmin',
       key: 'isAdmin',
       render: (isAdmin: boolean) =>
         isAdmin ? 'Администратор' : 'Пользователь',
+    },
+    {
+      title: 'Статус блокировки',
+      dataIndex: 'isActive',
+      key: 'isActive',
+      render: (_: boolean, record: any) => {
+        return (
+            <Switch
+                checkedChildren="Активен"
+                unCheckedChildren="Заблокирован"
+                defaultChecked={record.isActive}
+                value={record.isActive}
+                disabled={record.isAdmin}
+                onChange={(checked) => {
+                  Modal.confirm({
+                      title: `Вы уверены, что хотите ${!checked ? 'заблокировать' : 'активировать'} пользователя?`,
+                      onOk: () =>
+                          handleUserActiveStatusUpdate(record.id, checked)
+                  })
+                }}
+            />
+        );
+      }
     },
     {
       title: 'Дата регистрации',
@@ -137,24 +190,32 @@ export const AdminPage = () => {
       key: 'actions',
       render: (_: any, record: any) => (
         <Space size="middle">
-          <Button
-            type="primary"
-            danger={record.isAdmin}
-            onClick={() => {
-              Modal.confirm({
-                title: `Вы уверены, что хотите ${
-                  record.isAdmin ? 'снять с' : 'назначить'
-                } пользователя администратором?`,
-                onOk: () => handleAdminStatusUpdate(record.id, !record.isAdmin),
-              });
-            }}
-            loading={updateUserAdminStatusMutation.isPending}
-          >
-            {record.isAdmin
-              ? 'Снять с администратора'
-              : 'Сделать администратором'}
-          </Button>
-          <Button danger>Удалить</Button>
+          {!record.isAdmin &&
+            (
+            <>
+              <Button
+                type="primary"
+                danger={record.isAdmin}
+                onClick={() => {
+                  Modal.confirm({
+                      title: `Вы уверены, что хотите назначить пользователя администратором?`,
+                      onOk: () =>
+                          handleAdminStatusUpdate(record.id, !record.isAdmin)
+                  });
+                }}
+                loading={updateUserAdminStatusMutation.isPending}
+              >
+                Сделать администратором
+              </Button>
+              <Button danger onClick={() => {
+                Modal.confirm({
+                    title: `Вы уверены, что хотите удалить пользователя?`,
+                    onOk: () => handleUserDelete(record.id)
+                });
+              }}>Удалить</Button>
+            </>
+          )
+          }
         </Space>
       ),
     },

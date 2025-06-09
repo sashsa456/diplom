@@ -27,7 +27,8 @@ export class AuthService {
     const user = await this.userService
       .findOne({
         where: {
-          email: dto.email
+          email: dto.email,
+          isActive: true
         }
       })
       .catch(() => {

@@ -337,12 +337,39 @@ export const useUpdateUserAdminStatus = () => {
   >({
     mutationFn: async ({ userId, isAdmin }) => {
       const { data } = await apiClient.patch(
-        `${endpoints.user.all}/${userId}/admin`,
+        `${endpoints.user.all}/${userId}`,
         { isAdmin },
       );
       return data;
     },
   });
+};
+
+export const useUpdateUserActiveStatus = () => {
+  return useMutation<
+    { message: string },
+    Error,
+    { userId: number; isActive: boolean }
+  >({
+    mutationFn: async ({ userId, isActive }) => {
+      const { data } = await apiClient.patch(
+        `${endpoints.user.all}/${userId}`,
+        { isActive },
+      );
+      return data;
+    },
+  });
+};
+
+export const useDeleteUser = () => {
+return useMutation<{ message: string }, Error, { userId: number }>({
+        mutationFn: async ({userId}) => {
+            const { data } = await apiClient.delete(
+                `${endpoints.user.all}/${userId}`
+            );
+            return data;
+        }
+    });
 };
 
 export const useUpdateProduct = () => {

@@ -35,8 +35,7 @@ export class UserEntity extends TimestampEntity {
   isAdmin: boolean;
 
   @Column({
-    default: true,
-    select: false
+    default: true
   })
   isActive: boolean;
 

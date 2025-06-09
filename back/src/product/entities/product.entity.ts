@@ -77,7 +77,7 @@ export class ProductEntity extends TimestampEntity {
       `SELECT AVG(rating) FROM reviews WHERE reviews."productId" = ${alias}.id`,
     type: "float",
     transformer: {
-      from: value => Number(value || 0),
+      from: (value: string) => +Number(value || 0).toFixed(1),
       to: value => value
     }
   })
