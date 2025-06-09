@@ -21,7 +21,11 @@ export class AppService {
     };
   }
 
-  seed() {
+  async seed() {
+    if ((await this.repo.count()) > 0) {
+      return;
+    }
+
     return this.repo.save({
       name: "Seeded Name",
       contactEmail: "seeded_email@example.com",
