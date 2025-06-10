@@ -13,7 +13,7 @@ export class CommentGuard implements CanActivate {
       return false;
     }
 
-    if (!request.user.isAdmin) {
+    if (request.user.isAdmin) {
       return true;
     }
 

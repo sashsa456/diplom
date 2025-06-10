@@ -100,6 +100,7 @@ export interface User {
   accessToken: string;
   refreshToken: string;
   avatar: string;
+  isAdmin?: boolean;
 }
 
 export interface Comment {
@@ -306,6 +307,24 @@ export const useCreateComment = () => {
     },
   });
 };
+
+export const useDeleteComment = () => {
+  return useMutation({
+    mutationFn: async ({
+      reviewId,
+      commentId,
+    }: {
+      reviewId: number;
+      commentId: number;
+    }) => {
+      const { data } = await apiClient.delete(
+        endpoints.reviews.comment(reviewId, commentId),
+      );
+      return data;
+    },
+  });
+};
+
 interface FeedbackFormData {
   name: string;
   email: string;

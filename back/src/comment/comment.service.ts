@@ -54,6 +54,7 @@ export class CommentService {
   }
 
   async remove(id: number) {
+    console.log(id);
     const comment = await this.findOne({ where: { id } });
 
     await this.commentRepository.remove(comment);

@@ -7,6 +7,7 @@ import {
   Controller,
   Delete,
   Param,
+  ParseIntPipe,
   Post,
   UseGuards
 } from "@nestjs/common";
@@ -46,7 +47,7 @@ export class ReviewController {
 
   @Post(":id/comments")
   createComment(
-    @Param("id") id: number,
+    @Param("id", ParseIntPipe) id: number,
     @UserMe("id") userId: number,
     @Body() createCommentDto: CreateCommentDto
   ) {
@@ -73,8 +74,8 @@ export class ReviewController {
   @Delete(":id/comments/:commentId")
   @UseGuards(CommentGuard)
   removeComment(
-    @Param("id") id: number,
-    @Param("commentId") commentId: number
+    @Param("id", ParseIntPipe) id: number,
+    @Param("commentId", ParseIntPipe) commentId: number
   ) {
     return this.commentService.remove(commentId);
   }

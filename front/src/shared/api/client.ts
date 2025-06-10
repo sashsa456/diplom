@@ -60,40 +60,41 @@ apiClient.interceptors.response.use(
 );
 
 export const endpoints = {
-  auth: {
-    login: '/auth/login',
-    register: '/auth/register',
-    logout: '/auth/logout',
-    getUserAgreement: '/static/user_agreement.docx',
-    refresh: '/auth/refresh',
-  },
-  user: {
-    profile: '/users/me',
-    uploadAvatar: '/users/me/avatar',
-    all: '/users',
-  },
-  products: {
-    list: '/products',
-    details: (id: number) => `/products/${id}`,
-    search: '/products/search',
-    create: '/products',
-    myProducts: '/users/me/products',
-  },
-  reviews: {
-    list: (productId: number) => `/products/${productId}/reviews`,
-    create: (productId: number) => `/products/${productId}/reviews`,
-    delete: (productId: number, reviewId: number) =>
-      `/products/${productId}/reviews/${reviewId}`,
-    comments: (reviewId: number) => `/reviews/${reviewId}/comments`,
-  },
-  feedbacks: {
-    create: '/feedbacks',
-    all: '/feedbacks',
-    delete: '/feedbacks',
-  },
-  app: {
-    all: '/app',
-  },
+    auth: {
+        login: "/auth/login",
+        register: "/auth/register",
+        logout: "/auth/logout",
+        getUserAgreement: "/static/user_agreement.docx",
+        refresh: "/auth/refresh"
+    },
+    user: {
+        profile: "/users/me",
+        uploadAvatar: "/users/me/avatar",
+        all: "/users"
+    },
+    products: {
+        list: "/products",
+        details: (id: number) => `/products/${id}`,
+        search: "/products/search",
+        create: "/products",
+        myProducts: "/users/me/products"
+    },
+    reviews: {
+        list: (productId: number) => `/products/${productId}/reviews`,
+        create: (productId: number) => `/products/${productId}/reviews`,
+        delete: (productId: number, reviewId: number) =>
+            `/products/${productId}/reviews/${reviewId}`,
+        comments: (reviewId: number) => `/reviews/${reviewId}/comments`,
+        comment: (reviewId: number, commentId: number) => `/reviews/${reviewId}/comments/${commentId}`
+    },
+    feedbacks: {
+        create: "/feedbacks",
+        all: "/feedbacks",
+        delete: "/feedbacks"
+    },
+    app: {
+        all: "/app"
+    }
 };
 
 export const queryKeys = {
