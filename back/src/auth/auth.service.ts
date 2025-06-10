@@ -84,7 +84,7 @@ export class AuthService {
 
     return {
       accessToken: await this.signToken(userId, Token.Access),
-      refreshToken: await this.createRefreshToken(userId)
+      refreshToken
     };
   }
 
