@@ -12,5 +12,10 @@ export default defineConfig({
       '@features': path.resolve(__dirname, './src/features'),
     },
   },
+  server: {
+    allowedHosts: ['mylocaldev.com'],
+    port: 5173,
+    host: '127.0.0.1',
+  },
   plugins: [react()],
 });
