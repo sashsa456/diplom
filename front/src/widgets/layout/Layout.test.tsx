@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { Layout } from './Layout';
 import { useAppInfo } from '@/shared/api/hooks';
 
-// Мокаем хуки
 const mockUseAuthStore = jest.fn();
 jest.mock('@/shared/hooks', () => ({
   useAuthStore: () => mockUseAuthStore(),
@@ -12,7 +11,6 @@ jest.mock('@/shared/api/hooks', () => ({
   useAppInfo: jest.fn(),
 }));
 
-// Мокаем AppHeader и AppFooter
 jest.mock('./components/AppHeader', () => ({
   AppHeader: jest.fn(() => <div>Mock AppHeader</div>),
 }));
@@ -23,9 +21,8 @@ jest.mock('./components/AppFooter', () => ({
 describe('Layout', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Ensure mockUseAuthStore returns a valid structure by default for Layout component
     mockUseAuthStore.mockReturnValue({
-      user: null, // Default to no user
+      user: null,
       logout: jest.fn(),
     });
   });
@@ -55,7 +52,6 @@ describe('Layout', () => {
     });
 
     mockUseAuthStore.mockReturnValue({
-      // This overrides the beforeEach for this test
       user: { id: 1, email: 'test@example.com', isAdmin: false },
       logout: jest.fn(),
     });
@@ -98,8 +94,6 @@ describe('Layout', () => {
       </Layout>,
     );
 
-    // Поскольку AppHeader замокан, мы не можем напрямую проверить наличие текста пользователя
-    // Мы проверяем, что mock AppHeader был отрендерен
     expect(screen.getByText('Mock AppHeader')).toBeInTheDocument();
   });
 
@@ -115,7 +109,7 @@ describe('Layout', () => {
     });
 
     mockUseAuthStore.mockReturnValue({
-      user: { id: 1, email: 'test@example.com', isAdmin: false }, // Ensure isAdmin is present
+      user: { id: 1, email: 'test@example.com', isAdmin: false },
       logout: jest.fn(),
     });
 
@@ -125,8 +119,6 @@ describe('Layout', () => {
       </Layout>,
     );
 
-    // Поскольку AppFooter замокан, мы не можем напрямую проверить наличие текста приложения
-    // Мы проверяем, что mock AppFooter был отрендерен
     expect(screen.getByText('Mock AppFooter')).toBeInTheDocument();
   });
 });

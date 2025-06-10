@@ -106,7 +106,7 @@ export const ProductFilters = ({
     const initialGender = searchParams.get('gender');
     const initialCountry = searchParams.get('countryMade');
     const initialMinPrice = searchParams.get('maxPrice');
-    const initialMaxPrice = searchParams.get("minPrice");
+    const initialMaxPrice = searchParams.get('minPrice');
     const initialRating = searchParams.get('rating');
 
     const validCategories = PRODUCT_CATEGORIES.map((cat) => cat.value);
@@ -124,9 +124,10 @@ export const ProductFilters = ({
       season: initialSeason ? initialSeason.split(',') : [],
       gender: initialGender ? initialGender.split(',') : [],
       country: initialCountry ? initialCountry.split(',') : [],
-      priceRange: initialMinPrice && initialMaxPrice
-        ? [Number(initialMinPrice), Number(initialMaxPrice)]
-        : [0, 1000000],
+      priceRange:
+        initialMinPrice && initialMaxPrice
+          ? [Number(initialMinPrice), Number(initialMaxPrice)]
+          : [0, 1000000],
       rating: initialRating ? Number(initialRating) : 0,
     };
   });
@@ -170,16 +171,9 @@ export const ProductFilters = ({
       currentFilters.priceRange[0] !== 0 ||
       currentFilters.priceRange[1] !== 1000000
     ) {
-      params.set(
-        'minPrice',
-        currentFilters.priceRange[0].toString(),
-      );
+      params.set('minPrice', currentFilters.priceRange[0].toString());
 
-      params.set(
-        'maxPrice',
-        currentFilters.priceRange[1].toString(),
-      );
-
+      params.set('maxPrice', currentFilters.priceRange[1].toString());
     }
     if (currentFilters.rating !== 0) {
       params.set('rating', currentFilters.rating.toString());
@@ -198,7 +192,6 @@ export const ProductFilters = ({
         [filterType]: value,
       };
 
-      // Validate categories if they are being changed
       if (filterType === 'category' && Array.isArray(value)) {
         const validCategories = PRODUCT_CATEGORIES.map((cat) => cat.value);
         const filteredCategories = value.filter((cat) =>
@@ -210,7 +203,6 @@ export const ProductFilters = ({
       if (filterType === 'priceRange') {
         const [minPrice, maxPrice] = value as [number, number];
         updatedFilters.priceRange = [minPrice, maxPrice];
-        
       }
 
       updateSearchParams(updatedFilters, searchQuery);

@@ -208,41 +208,28 @@ export const useUpdateUser = () => {
   });
 };
 
-// interface ProductSearchParams {
-//   category?: string;
-//   query?: string;
-//   status?: 'pending' | 'accepted' | 'rejected';
-//   size?: string;
-//   color?: string;
-//   material?: string;
-//   season?: string;
-//   gender?: string;
-//   countryMade?: string;
-//   price?: string;
-//   rating?: number;
-// }
-
 export const useProducts = (params: URLSearchParams) => {
   return useQuery({
     queryKey: [queryKeys.products.all, params],
     queryFn: async () => {
+      const price = params.get('price');
 
-      const price = params.get("price");
-      
       if (price) {
-        const [minPrice, maxPrice] = price ? price.split("-") : ["0", "1000000"];
+        const [minPrice, maxPrice] = price
+          ? price.split('-')
+          : ['0', '1000000'];
 
-        params.delete("price");
-        params.set("minPrice", minPrice);
-        params.set("maxPrice", maxPrice);
+        params.delete('price');
+        params.set('minPrice', minPrice);
+        params.set('maxPrice', maxPrice);
       }
 
-      params.set("query", params.get("query")?.trim() || "%");      
+      params.set('query', params.get('query')?.trim() || '%');
 
       const endpoint = endpoints.products.search;
 
       const { data } = await apiClient.get(endpoint, {
-        params: params
+        params: params,
       });
       return data;
     },
