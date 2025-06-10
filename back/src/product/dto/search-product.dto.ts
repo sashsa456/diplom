@@ -6,6 +6,7 @@ import {
   CountryMade,
   Gender,
   Material,
+  ProductStatus,
   Season,
   Size
 } from "../product.types";
@@ -14,6 +15,15 @@ export class SearchProductDto {
   @IsString()
   @ApiProperty()
   query: string;
+
+  @IsEnum(ProductStatus, {
+    each: true
+  })
+  @ApiProperty({
+    required: false
+  })
+  @IsOptional()
+  status?: ProductStatus;
 
   @IsNumber()
   @Min(1)

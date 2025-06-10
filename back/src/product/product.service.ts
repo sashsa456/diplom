@@ -83,10 +83,10 @@ export class ProductService {
           } */
     return this.repo.query(
       `
-        SELECT id, title, description, image, price, category, size, colors, material, season, gender, "countryMade" FROM products
+        SELECT id, title, description, image, price, category, size, colors, material, season, gender, "countryMade", status FROM products
         WHERE
-          status = '${ProductStatus.Accepted}'
-          AND (
+          ${filters.status ? "" : `status = '${ProductStatus.Accepted}' AND`}
+          (
             title ILIKE '%${iLikePattern.replaceAll(keyString, "title")}%'
             OR description ILIKE '%${iLikePattern.replaceAll(keyString, "description")}%'
           )
