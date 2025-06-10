@@ -111,8 +111,6 @@ export class ProductEntity extends TimestampEntity {
   })
   user: UserEntity;
 
-  @OneToMany(() => ReviewEntity, review => review.product, {
-    eager: true
-  })
+  @OneToMany(() => ReviewEntity, review => review.product)
   reviews: ReviewEntity[];
 }

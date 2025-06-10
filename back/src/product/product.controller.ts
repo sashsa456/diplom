@@ -104,6 +104,9 @@ export class ProductController {
     return this.productService.findOne({
       where: {
         id
+      },
+      relations: {
+        reviews: true
       }
     });
   }

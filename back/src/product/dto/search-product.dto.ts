@@ -46,19 +46,23 @@ export class SearchProductDto {
   @IsOptional()
   colors: Color[];
 
-  @IsEnum(Material)
+  @IsEnum(Material, {
+    each: true
+  })
   @ApiProperty({
     required: false
   })
   @IsOptional()
-  material: string;
+  material: Material[];
 
-  @IsEnum(Season)
+  @IsEnum(Season, {
+    each: true
+  })
   @ApiProperty({
     required: false
   })
   @IsOptional()
-  season: Season;
+  season: Season[];
 
   @IsEnum(Gender)
   @ApiProperty({
@@ -67,10 +71,12 @@ export class SearchProductDto {
   @IsOptional()
   gender: Gender;
 
-  @IsEnum(CountryMade)
+  @IsEnum(CountryMade, {
+    each: true
+  })
   @ApiProperty({
     required: false
   })
   @IsOptional()
-  countryMade: CountryMade;
+  countryMade: CountryMade[];
 }
