@@ -226,21 +226,44 @@ export const useProducts = (params?: ProductSearchParams) => {
   return useQuery({
     queryKey: [queryKeys.products.all, params],
     queryFn: async () => {
-      const processedParams: ProductSearchParams = { ...params };
+      const processedParams: Record<string, any> = { ...params };
 
-      const hasActualSearchQuery =
-        processedParams.query && processedParams.query !== '';
+      if (
+        !processedParams.query ||
+        String(processedParams.query).trim() === ''
+      ) {
+        processedParams.query = '%';
+      }
 
-      const endpoint = hasActualSearchQuery
-        ? endpoints.products.search
-        : endpoints.products.list;
+      const endpoint = endpoints.products.search;
 
-      if (endpoint === endpoints.products.list) {
-        delete processedParams.query;
+      const finalParams: { [key: string]: any } = {};
+
+      for (const key in processedParams) {
+        const value = processedParams[key];
+        if (key !== 'status' && value !== undefined) {
+          if (Array.isArray(value)) {
+            if (value.length > 0) {
+              finalParams[key] = value.join(',');
+            }
+          } else if (key === 'price' && String(value) === '0-1000000') {
+            continue;
+          } else if (key === 'rating' && Number(value) === 0) {
+            continue;
+          } else if (
+            typeof value === 'string' &&
+            value.trim() === '' &&
+            key !== 'query'
+          ) {
+            continue;
+          } else {
+            finalParams[key] = value;
+          }
+        }
       }
 
       const { data } = await apiClient.get(endpoint, {
-        params: processedParams,
+        params: finalParams,
       });
       return data;
     },
