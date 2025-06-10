@@ -91,8 +91,6 @@ export const ReviewCard = ({
     }
   };
 
-  
-
   return (
     <Card key={review.id} style={{ width: '100%' }}>
       <Row gutter={16} align="top">
@@ -143,25 +141,34 @@ export const ReviewCard = ({
               <Title level={5}>Комментарии:</Title>
               <Space direction="vertical" style={{ width: '100%' }}>
                 {review.comments.map((comment: Comment) => (
-                  <Card key={comment.id} size="small" extra={<>
-                    {currentUser?.isAdmin || currentUser?.id !== comment.user.id && (
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => {
-                          Modal.confirm({
-                            title: 'Удалить комментарий?',
-                            content: 'Вы уверены, что хотите удалить этот комментарий?',
-                            okText: 'Да',
-                            cancelText: 'Нет',
-                            onOk: () => handleCommentDelete(review.id, comment.id),
-                          });
-                        }}
-                        loading={deleteComment.isPending}
-                      />
-                    )}
-                  </>}>
+                  <Card
+                    key={comment.id}
+                    size="small"
+                    extra={
+                      <>
+                        {currentUser?.isAdmin ||
+                          (currentUser?.id === comment.user.id && (
+                            <Button
+                              type="text"
+                              danger
+                              icon={<DeleteOutlined />}
+                              onClick={() => {
+                                Modal.confirm({
+                                  title: 'Удалить комментарий?',
+                                  content:
+                                    'Вы уверены, что хотите удалить этот комментарий?',
+                                  okText: 'Да',
+                                  cancelText: 'Нет',
+                                  onOk: () =>
+                                    handleCommentDelete(review.id, comment.id),
+                                });
+                              }}
+                              loading={deleteComment.isPending}
+                            />
+                          ))}
+                      </>
+                    }
+                  >
                     <Space align="start">
                       <Avatar
                         src={`http://localhost:3001/api${comment.user.avatar}`}

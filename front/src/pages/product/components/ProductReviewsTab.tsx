@@ -54,6 +54,9 @@ export const ProductReviewsTab = ({
       queryClient.invalidateQueries({
         queryKey: queryKeys.reviews.list(productId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.details(productId),
+      });
     } catch (error) {
       message.error('Ошибка при добавлении отзыва');
     }
