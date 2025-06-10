@@ -29,7 +29,10 @@ export interface Filters {
 
 export interface FilterSectionProps {
   title: string;
-  options: string[] | number[];
+  options: {
+    value: string | number;
+    label: string | number;
+  }[];
   filterType: keyof Filters;
   filters: Filters;
   onFilterChange: (

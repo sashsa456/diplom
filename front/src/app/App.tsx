@@ -14,7 +14,7 @@ import { ProfilePage } from '@/pages/profile';
 import { AdminPage } from '@/pages/admin';
 import { CreateProductPage } from '@/pages/create-product';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
-import { AppInfo, useAppInfo } from '@/shared/api/hooks';
+import { AppInfo } from '@/shared/api/hooks';
 import { queryKeys, apiClient, endpoints } from '@/shared/api/client';
 
 const queryClient = new QueryClient({
@@ -29,19 +29,19 @@ const queryClient = new QueryClient({
   },
 });
 
-queryClient.fetchQuery({
-  queryKey: [queryKeys.app.all],
+queryClient
+  .fetchQuery({
+    queryKey: [queryKeys.app.all],
     queryFn: async () => {
       const { data } = await apiClient.get<AppInfo>(endpoints.app.all);
       return data;
     },
-}).then(({name}) => {
-  document.title = name;
-});
+  })
+  .then(({ name }) => {
+    document.title = name;
+  });
 
 function App() {
-  
-
   return (
     <QueryClientProvider client={queryClient}>
       <ConfigProvider
@@ -55,12 +55,40 @@ function App() {
         <Router>
           <Layout>
             <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/catalog" element={<CatalogPage />} />
-              <Route path="/product/:id" element={<ProductPage />} />
               <Route path="/auth" element={<AuthPage />} />
-              <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="*" element={<NotFoundPage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <HomePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/catalog"
+                element={
+                  <ProtectedRoute>
+                    <CatalogPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/product/:id"
+                element={
+                  <ProtectedRoute>
+                    <ProductPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/feedback"
+                element={
+                  <ProtectedRoute>
+                    <FeedbackPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/profile"
                 element={

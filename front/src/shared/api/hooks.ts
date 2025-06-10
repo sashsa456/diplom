@@ -16,10 +16,10 @@ export const useLogin = () => {
       setUser({
         id: payload.sub,
         email: credentials.email,
-        //FIXME временно используется часть email как username
-        username: credentials.email.split('@')[0],
+        username: data.username,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
+        avatar: data.avatar,
       });
     },
   });
@@ -38,7 +38,6 @@ export const useRegister = () => {
       return { data, userData };
     },
     onSuccess: ({ data, userData }) => {
-      // Получаем данные пользователя из токена
       const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
 
       setUser({
@@ -47,6 +46,7 @@ export const useRegister = () => {
         username: userData.username,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
+        avatar: '',
       });
     },
   });
@@ -100,6 +100,22 @@ export interface User {
   accessToken: string;
   refreshToken: string;
   avatar: string;
+}
+
+export interface Comment {
+  id: number;
+  user: User;
+  createdAt: string;
+  message: string;
+}
+
+export interface Review {
+  id: number;
+  user: User;
+  rating: number;
+  createdAt: string;
+  text: string;
+  comments: Comment[];
 }
 
 export interface Feedback {
@@ -191,15 +207,40 @@ export const useUpdateUser = () => {
   });
 };
 
-export const useProducts = (params?: {
+interface ProductSearchParams {
   category?: string;
-  search?: string;
+  query?: string;
   status?: 'pending' | 'accepted' | 'rejected';
-}) => {
+  size?: string;
+  color?: string;
+  material?: string;
+  season?: string;
+  gender?: string;
+  countryMade?: string;
+  price?: string;
+  rating?: number;
+}
+
+export const useProducts = (params?: ProductSearchParams) => {
   return useQuery({
     queryKey: [queryKeys.products.all, params],
     queryFn: async () => {
-      const { data } = await apiClient.get(endpoints.products.list, { params });
+      const processedParams: ProductSearchParams = { ...params };
+
+      const hasActualSearchQuery =
+        processedParams.query && processedParams.query !== '';
+
+      const endpoint = hasActualSearchQuery
+        ? endpoints.products.search
+        : endpoints.products.list;
+
+      if (endpoint === endpoints.products.list) {
+        delete processedParams.query;
+      }
+
+      const { data } = await apiClient.get(endpoint, {
+        params: processedParams,
+      });
       return data;
     },
   });
@@ -248,9 +289,32 @@ export const useDeleteReview = (productId: number) => {
   });
 };
 
+export const useCreateComment = () => {
+  return useMutation({
+    mutationFn: async ({
+      reviewId,
+      message,
+    }: {
+      reviewId: number;
+      message: string;
+    }) => {
+      const { data } = await apiClient.post(
+        endpoints.reviews.comments(reviewId),
+        { message },
+      );
+      return data;
+    },
+  });
+};
+interface FeedbackFormData {
+  name: string;
+  email: string;
+  topic: string;
+  text: string;
+}
 export const useSendFeedback = () => {
   return useMutation({
-    mutationFn: async (feedbackData: Exclude<Feedback, 'id'>) => {
+    mutationFn: async (feedbackData: FeedbackFormData) => {
       const { data } = await apiClient.post(
         endpoints.feedbacks.create,
         feedbackData,
@@ -362,14 +426,14 @@ export const useUpdateUserActiveStatus = () => {
 };
 
 export const useDeleteUser = () => {
-return useMutation<{ message: string }, Error, { userId: number }>({
-        mutationFn: async ({userId}) => {
-            const { data } = await apiClient.delete(
-                `${endpoints.user.all}/${userId}`
-            );
-            return data;
-        }
-    });
+  return useMutation<{ message: string }, Error, { userId: number }>({
+    mutationFn: async ({ userId }) => {
+      const { data } = await apiClient.delete(
+        `${endpoints.user.all}/${userId}`,
+      );
+      return data;
+    },
+  });
 };
 
 export const useUpdateProduct = () => {

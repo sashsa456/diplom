@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Card,
   Typography,
@@ -211,6 +211,7 @@ export const ProfilePage = () => {
           <Card
             key={product.id}
             hoverable
+            onClick={() => navigate(`/product/${product.id}`)}
             cover={
               <img
                 alt={product.title}
@@ -225,7 +226,10 @@ export const ProfilePage = () => {
                     <Button
                       key="edit"
                       type="primary"
-                      onClick={() => handleEditProduct(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditProduct(product);
+                      }}
                     >
                       Редактировать
                     </Button>,
@@ -345,18 +349,28 @@ export const ProfilePage = () => {
               <Form.Item label="Имя пользователя" name="username">
                 <Input />
               </Form.Item>
-              <Form.Item label="Email" name="email" rules={[{
-                type: "email",
-                message: 'Некорректный email'
-              }]}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  {
+                    type: 'email',
+                    message: 'Некорректный email',
+                  },
+                ]}
+              >
                 <Input />
               </Form.Item>
-              <Form.Item label="Новый пароль" name="password" rules={[
-                {
-                  min: 6,
-                  message: 'Пароль должен содержать не менее 6 символов',
-                }
-              ]}>
+              <Form.Item
+                label="Новый пароль"
+                name="password"
+                rules={[
+                  {
+                    min: 6,
+                    message: 'Пароль должен содержать не менее 6 символов',
+                  },
+                ]}
+              >
                 <Input.Password />
               </Form.Item>
               <Form.Item>
@@ -382,13 +396,6 @@ export const ProfilePage = () => {
             extra={
               <Space>
                 <Button onClick={() => setEditingProduct(null)}>Отмена</Button>
-                <Button
-                  type="primary"
-                  onClick={() => productForm.submit()}
-                  loading={updateProductMutation.isPending}
-                >
-                  Сохранить изменения
-                </Button>
                 <Button
                   type="primary"
                   onClick={handleResubmitProduct}

@@ -84,6 +84,7 @@ export const endpoints = {
     create: (productId: number) => `/products/${productId}/reviews`,
     delete: (productId: number, reviewId: number) =>
       `/products/${productId}/reviews/${reviewId}`,
+    comments: (reviewId: number) => `/reviews/${reviewId}/comments`,
   },
   feedbacks: {
     create: '/feedbacks',
