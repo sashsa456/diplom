@@ -105,7 +105,8 @@ export const ProductFilters = ({
     const initialSeason = searchParams.get('season');
     const initialGender = searchParams.get('gender');
     const initialCountry = searchParams.get('countryMade');
-    const initialPrice = searchParams.get('price');
+    const initialMinPrice = searchParams.get('maxPrice');
+    const initialMaxPrice = searchParams.get("minPrice");
     const initialRating = searchParams.get('rating');
 
     const validCategories = PRODUCT_CATEGORIES.map((cat) => cat.value);
@@ -123,8 +124,8 @@ export const ProductFilters = ({
       season: initialSeason ? initialSeason.split(',') : [],
       gender: initialGender ? initialGender.split(',') : [],
       country: initialCountry ? initialCountry.split(',') : [],
-      priceRange: initialPrice
-        ? (initialPrice.split('-').map(Number) as [number, number])
+      priceRange: initialMinPrice && initialMaxPrice
+        ? [Number(initialMinPrice), Number(initialMaxPrice)]
         : [0, 1000000],
       rating: initialRating ? Number(initialRating) : 0,
     };
@@ -170,9 +171,15 @@ export const ProductFilters = ({
       currentFilters.priceRange[1] !== 1000000
     ) {
       params.set(
-        'price',
-        `${currentFilters.priceRange[0]}-${currentFilters.priceRange[1]}`,
+        'minPrice',
+        currentFilters.priceRange[0].toString(),
       );
+
+      params.set(
+        'maxPrice',
+        currentFilters.priceRange[1].toString(),
+      );
+
     }
     if (currentFilters.rating !== 0) {
       params.set('rating', currentFilters.rating.toString());
@@ -198,6 +205,12 @@ export const ProductFilters = ({
           validCategories.includes(cat as Category),
         ) as Category[];
         updatedFilters.category = filteredCategories;
+      }
+
+      if (filterType === 'priceRange') {
+        const [minPrice, maxPrice] = value as [number, number];
+        updatedFilters.priceRange = [minPrice, maxPrice];
+        
       }
 
       updateSearchParams(updatedFilters, searchQuery);

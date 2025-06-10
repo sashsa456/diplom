@@ -1,5 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import {
+  IsEnum,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString
+} from "class-validator";
 import {
   Category,
   Color,
@@ -16,6 +22,13 @@ export class SearchProductDto {
   @ApiProperty()
   query: string;
 
+  @IsNumber()
+  @ApiProperty({
+    required: false
+  })
+  @IsOptional()
+  rating: number;
+
   @IsEnum(ProductStatus, {
     each: true
   })
@@ -23,29 +36,39 @@ export class SearchProductDto {
     required: false
   })
   @IsOptional()
-  status?: ProductStatus;
+  status?: ProductStatus[];
 
-  @IsNumber()
-  @Min(1)
+  @IsNumberString()
   @ApiProperty({
     required: false
   })
   @IsOptional()
-  price: number;
+  minPrice: number;
 
-  @IsEnum(Category)
+  @IsNumberString()
   @ApiProperty({
     required: false
   })
   @IsOptional()
-  category: Category;
+  maxPrice: number;
 
-  @IsEnum(Size)
+  @IsEnum(Category, {
+    each: true
+  })
   @ApiProperty({
     required: false
   })
   @IsOptional()
-  size: Size;
+  category: Category[];
+
+  @IsEnum(Size, {
+    each: true
+  })
+  @ApiProperty({
+    required: false
+  })
+  @IsOptional()
+  size: Size[];
 
   @IsEnum(Color, {
     each: true
@@ -74,12 +97,14 @@ export class SearchProductDto {
   @IsOptional()
   season: Season[];
 
-  @IsEnum(Gender)
+  @IsEnum(Gender, {
+    each: true
+  })
   @ApiProperty({
     required: false
   })
   @IsOptional()
-  gender: Gender;
+  gender: Gender[];
 
   @IsEnum(CountryMade, {
     each: true

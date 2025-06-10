@@ -208,62 +208,41 @@ export const useUpdateUser = () => {
   });
 };
 
-interface ProductSearchParams {
-  category?: string;
-  query?: string;
-  status?: 'pending' | 'accepted' | 'rejected';
-  size?: string;
-  color?: string;
-  material?: string;
-  season?: string;
-  gender?: string;
-  countryMade?: string;
-  price?: string;
-  rating?: number;
-}
+// interface ProductSearchParams {
+//   category?: string;
+//   query?: string;
+//   status?: 'pending' | 'accepted' | 'rejected';
+//   size?: string;
+//   color?: string;
+//   material?: string;
+//   season?: string;
+//   gender?: string;
+//   countryMade?: string;
+//   price?: string;
+//   rating?: number;
+// }
 
-export const useProducts = (params?: ProductSearchParams) => {
+export const useProducts = (params: URLSearchParams) => {
   return useQuery({
     queryKey: [queryKeys.products.all, params],
     queryFn: async () => {
-      const processedParams: Record<string, any> = { ...params };
 
-      if (
-        !processedParams.query ||
-        String(processedParams.query).trim() === ''
-      ) {
-        processedParams.query = '%';
+      const price = params.get("price");
+      
+      if (price) {
+        const [minPrice, maxPrice] = price ? price.split("-") : ["0", "1000000"];
+
+        params.delete("price");
+        params.set("minPrice", minPrice);
+        params.set("maxPrice", maxPrice);
       }
+
+      params.set("query", params.get("query")?.trim() || "%");      
 
       const endpoint = endpoints.products.search;
 
-      const finalParams: { [key: string]: any } = {};
-
-      for (const key in processedParams) {
-        const value = processedParams[key];
-        if (key !== 'status' && value !== undefined) {
-          if (Array.isArray(value)) {
-            if (value.length > 0) {
-              finalParams[key] = value.join(',');
-            }
-          } else if (key === 'price' && String(value) === '0-1000000') {
-            continue;
-          } else if (key === 'rating' && Number(value) === 0) {
-            continue;
-          } else if (
-            typeof value === 'string' &&
-            value.trim() === '' &&
-            key !== 'query'
-          ) {
-            continue;
-          } else {
-            finalParams[key] = value;
-          }
-        }
-      }
-
       const { data } = await apiClient.get(endpoint, {
-        params: finalParams,
+        params: params
       });
       return data;
     },

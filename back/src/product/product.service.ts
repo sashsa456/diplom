@@ -1,12 +1,19 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { FindManyOptions, FindOneOptions, Repository } from "typeorm";
+import {
+  Between,
+  FindManyOptions,
+  FindOneOptions,
+  ILike,
+  In,
+  Repository
+} from "typeorm";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { SearchProductDto } from "./dto/search-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { UpdateStatusDto } from "./dto/update-status.dto";
 import { ProductEntity } from "./entities/product.entity";
-import { ProductStatus } from "./product.types";
+import { Material, ProductStatus } from "./product.types";
 
 @Injectable()
 export class ProductService {
@@ -16,99 +23,73 @@ export class ProductService {
   ) {}
 
   async search(searchProductDto: SearchProductDto) {
-    const { query, colors, ...filters } = searchProductDto;
+    const {
+      query,
+      colors,
+      minPrice,
+      maxPrice,
+      rating,
+      status = ProductStatus.Accepted,
+      ...filters
+    } = searchProductDto;
 
-    // const makeQueryLike = (
-    //   key: keyof ProductEntity,
-    //   query: string,
-    //   where: FindOptionsWhere<ProductEntity> = {}
-    // ) =>
-    //   query
-    //     .trim()
-    //     .split(" ")
-    //     .map(q => ({
-    //       [key]: ILike(`%${q}%`),
-    //       ...where
-    //     }));
+    console.log(searchProductDto);
 
-    // const mapFilters = <E = ProductEntity, V = E[keyof E]>(
-    //   key: keyof E,
-    //   value: V | V[]
-    // ) => {
-    //   if (Array.isArray(value)) {
-    //     return {
-    //       [key]: In(value)
-    //     };
-    //   }
+    const queryBuilder = this.repo.createQueryBuilder("product");
 
-    //   return {
-    //     [key]: value
-    //   };
-    // };
+    // Базовые условия
+    if (status) {
+      queryBuilder.andWhere({ status });
+    } else {
+      queryBuilder.andWhere({ status: ProductStatus.Accepted });
+    }
 
-    // const filtersForQuery = Object.entries(filters).map(([key, value]) =>
-    //   mapFilters<ProductEntity>(key as keyof ProductEntity, value)
-    // );
+    // Текстовый поиск
+    if (query) {
+      const searchTerms = query.trim().split(" ");
+      const searchConditions = searchTerms.map(term => ({
+        title: ILike(`%${term}%`),
+        description: ILike(`%${term}%`)
+      }));
 
-    // const whereForTitle = makeQueryLike("title", query);
-    // const whereForDescription = makeQueryLike("description", query);
+      queryBuilder.andWhere(searchConditions);
+    }
 
-    // return this.repo.find({
-    //   where: [
-    //     ...whereForTitle,
-    //     ...whereForDescription,
-    //     ...filtersForQuery,
-    //     {
-    //       ...(colors && { colors: In(colors) })
-    //     }
-    //   ]
-    // });
+    // Ценовой диапазон
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      queryBuilder.andWhere({
+        price: Between(minPrice || 0, maxPrice || Number.MAX_SAFE_INTEGER)
+      });
+    }
 
-    const keyString = "?KEY_STRING";
-    const iLikePattern = query
-      .trim()
-      .split(" ")
-      .join(`%' OR ${keyString} ILIKE '%`);
+    // Фильтр по цветам
+    if (colors && colors.length > 0) {
+      queryBuilder.andWhere("product.colors && ARRAY[:...colors]", { colors });
+    }
 
-    const preferedColors = Array.isArray(colors) ? colors : [colors];
+    // Фильтр по рейтингу (если есть виртуальное поле)
+    if (rating !== undefined) {
+      queryBuilder.andWhere(
+        `(SELECT AVG(r.rating) FROM reviews r WHERE r."productId" = product.id) >= :rating`,
+        { rating }
+      );
+    }
 
-    const filtersEntries = Object.entries(filters);
+    // Остальные фильтры
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          queryBuilder.andWhere({ [key]: In(value as Material[]) });
+          // value.forEach((item) => {
+          //   queryBuilder.orWhere({ [key]: item });
+          // });
+        } else {
+          queryBuilder.andWhere({ [key]: value });
+        }
+      }
+    });
 
-    /* ${
-            colors
-              ? `
-                  AND (array_to_string(colors) ILIKE '%${colors.join("','")}%');
-                `
-              : ""
-          } */
-    return this.repo.query(
-      `
-        SELECT id, title, description, image, price, category, size, colors, material, season, gender, "countryMade", status FROM products
-        WHERE
-          ${filters.status ? "" : `status = '${ProductStatus.Accepted}' AND`}
-          (
-            title ILIKE '%${iLikePattern.replaceAll(keyString, "title")}%'
-            OR description ILIKE '%${iLikePattern.replaceAll(keyString, "description")}%'
-          )
-            ${
-              filtersEntries.length > 0
-                ? `
-                    AND (
-                      ${filtersEntries
-                        .map(([key, value]) => {
-                          if (Array.isArray(value)) {
-                            return `"${key}" IN ('${value.join("','")}')`;
-                          }
-
-                          return `"${key}" = '${value}'`;
-                        })
-                        .join(" AND ")}  
-                    )
-                  `
-                : ""
-            }
-      `
-    );
+    return queryBuilder.getMany();
   }
 
   async create(createProductDto: CreateProductDto) {
