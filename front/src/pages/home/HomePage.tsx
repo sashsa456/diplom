@@ -3,11 +3,13 @@ import { useProducts } from '@/shared/api/hooks';
 import { HeroSection } from './components/HeroSection';
 import { CategoriesSection } from './components/CategoriesSection';
 import { PopularProductsSection } from './components/PopularProductsSection';
+import { useSearchParams } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
 export const HomePage = () => {
-  const { data: allProducts, isLoading, error } = useProducts();
+  const [searchParams] = useSearchParams("query=%");
+  const { data: allProducts, isLoading, error } = useProducts(searchParams);
 
   if (isLoading) {
     return (
